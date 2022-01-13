@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "paths": {
+            "@components/*": ["src/components/*"],
+            "@components": ["src/components/"],
+            "@assets/*": ["src/assets/*"],
+            "@assets": ["src/assets/"],
+            "@utils/*": ["src/utils/*"],
+            "@utils": ["src/utils/"],
+            "@workers/*": ["src/workers/*"],
+            "@workers": ["src/workers"],
+            "@shared-types/*": ["src/shared-types/*"],
+            "@shared-types": ["src/shared-types"],
+            "@stores/*": ["src/stores/*"],
+            "@stores": ["src/stores"],
+            "@src/*": ["src/*"],
+            "@src": ["src/"],
+            "@root/*": ["./*"],
+            "@root": ["./"]
+        }
+    }
+}

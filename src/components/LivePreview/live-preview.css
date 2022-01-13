@@ -1,0 +1,36 @@
+.LivePreview {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-items: stretch;
+    overflow: auto;
+}
+
+.LivePreview__Title {
+    background-color: #292929;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    display: block;
+    font-weight: bolder;
+}
+
+.LivePreview__Content {
+    display: flex;
+    align-items: stretch;
+    flex-direction: row;
+    flex-grow: 4;
+    overflow: auto;
+}
+
+.LivePreview__MenuWrapper {
+    position: absolute;
+    user-select: none;
+    margin-top: 1px;
+}
+
+.LivePreview__Page {
+    display: block;
+    margin: 16px;
+    flex-grow: 4;
+}

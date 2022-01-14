@@ -19,8 +19,6 @@ import MonacoEditor, {
     monaco,
 } from "react-monaco-editor";
 
-import {createBrowserHistory} from "history";
-import "monaco-editor";
 import {setDiagnosticsOptions} from "monaco-yaml";
 import * as path from "path";
 import {uuid} from "uuidv4";
@@ -37,7 +35,12 @@ import {FileTabs} from "@components/FileTabs";
 import {NotificationType, useNotifications} from "@components/Notifications";
 import {ResizablePanels} from "@components/ResizablePanels";
 
+import {useAppDispatch} from "@redux/hooks";
+import {setCurrentPage} from "@redux/reducers/ui";
+
 import {FilesStore, SettingsStore} from "@stores";
+
+import {Pages} from "@shared-types/ui";
 
 // @ts-ignore
 window.MonacoEnvironment = {
@@ -76,6 +79,7 @@ export const Editor: React.FC<EditorProps> = props => {
     const timeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const theme = useTheme();
+    const dispatch = useAppDispatch();
 
     const notifications = useNotifications();
 
@@ -319,7 +323,7 @@ export const Editor: React.FC<EditorProps> = props => {
                     message: "Invalid JSON schema defined.",
                     action: {
                         label: "Change",
-                        action: () => createBrowserHistory().push("/settings"),
+                        action: () => {},
                     },
                 });
                 return;
@@ -342,10 +346,12 @@ export const Editor: React.FC<EditorProps> = props => {
             notifications.appendNotification({
                 type: NotificationType.ERROR,
                 message:
-                    "No Webviz JSON schema defined. Select a schema in settings.",
+                    "No Webviz JSON schema defined. Select a schema in preferences.",
                 action: {
-                    label: "Settings",
-                    action: () => {},
+                    label: "Preferences",
+                    action: () => {
+                        dispatch(setCurrentPage(Pages.Preferences));
+                    },
                 },
             });
         }

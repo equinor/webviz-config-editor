@@ -15,12 +15,16 @@ import {Preferences} from "@components/Preferences/preferences";
 import {ResizablePanels} from "@components/ResizablePanels";
 import {ThemeSwitch} from "@components/ThemeSwitch";
 
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
+import {setCurrentPage} from "@redux/reducers/ui";
+
 import {FilesStore} from "@stores";
 
-type MainWindowProps = {};
+import {Pages} from "@shared-types/ui";
 
-export const MainWindow: React.FC<MainWindowProps> = props => {
-    const [currentPage, setCurrentPage] = React.useState("editor");
+export const MainWindow: React.FC = props => {
+    const currentPage = useAppSelector(state => state.ui.currentPage);
+    const dispatch = useAppDispatch();
     const theme = useTheme();
     const colorMode = React.useContext(ColorModeContext);
     const store = FilesStore.useStore();
@@ -54,7 +58,7 @@ export const MainWindow: React.FC<MainWindowProps> = props => {
                         onChange={(
                             event: React.SyntheticEvent<Element, Event>,
                             newValue: string
-                        ) => setCurrentPage(newValue)}
+                        ) => dispatch(setCurrentPage(newValue as Pages))}
                     >
                         <Tab
                             icon={

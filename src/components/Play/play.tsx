@@ -99,6 +99,9 @@ export const Play: React.FC = () => {
         const pythonShell = buildWebviz();
 
         return () => {
+            if (interval.current) {
+                clearInterval(interval.current);
+            }
             if (pythonShell) {
                 pythonShell.kill();
             }

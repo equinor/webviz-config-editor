@@ -72,13 +72,14 @@ const initialState: StoreState = {
 
 export const StoreReducerInit = (state: StoreState): StoreState => {
     const appData: MainProcessData = ipcRenderer.sendSync("get-app-data");
-
-    const config = readConfig(state.configPath);
+    const configPath = path.join(appData.userDataDir, ".config");
+    console.log(appData);
+    const config = readConfig(configPath);
     if (config.length > 0) {
         return {
             config,
             log: [],
-            configPath: path.join(appData.userDataDir, ".config"),
+            configPath,
         };
     }
     return state;

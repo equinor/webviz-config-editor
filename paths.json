@@ -10,6 +10,8 @@
             "@utils": ["src/utils/"],
             "@workers/*": ["src/workers/*"],
             "@workers": ["src/workers"],
+            "@redux/*": ["src/redux/*"],
+            "@redux": ["src/redux"],
             "@shared-types/*": ["src/shared-types/*"],
             "@shared-types": ["src/shared-types"],
             "@stores/*": ["src/stores/*"],

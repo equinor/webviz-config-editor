@@ -15,18 +15,28 @@ import {MainWindow} from "@components/MainWindow";
 import {NotificationsProvider} from "@components/Notifications";
 import {StoreProvider} from "@components/StoreProvider/store-provider";
 
+import {useAppDispatch} from "@redux/hooks";
+import {setTheme} from "@redux/reducers/ui";
+
+import {Themes} from "@shared-types/ui";
+
 export const ColorModeContext = React.createContext({
     toggleColorMode: () => {},
 });
 
 function App(): JSX.Element {
+    const dispatch = useAppDispatch();
     const [mode, setMode] = React.useState<"light" | "dark">(
         useMediaQuery("(prefers-color-scheme: dark)") ? "dark" : "light"
     );
     const colorMode = React.useMemo(
         () => ({
             toggleColorMode: () => {
-                setMode(prevMode => (prevMode === "light" ? "dark" : "light"));
+                setMode(prevMode => {
+                    const newMode = prevMode === "light" ? "dark" : "light";
+                    dispatch(setTheme(newMode as Themes));
+                    return newMode;
+                });
             },
         }),
         []

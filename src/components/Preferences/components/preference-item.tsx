@@ -109,6 +109,9 @@ export const PreferenceItem: React.FC<SettingMeta> = props => {
         setState({state: PreferenceItemState.VALID, message: ""});
         if (props.type === "pythonInterpreter") {
             setState({state: PreferenceItemState.VALIDATING, message: ""});
+            if (localValue === "") {
+                return;
+            }
             ipcRenderer.send("check-if-python-interpreter", localValue);
             ipcRenderer.once("python-interpreter-check", (event, arg) => {
                 if (arg.success) {

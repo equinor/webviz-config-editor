@@ -1,9 +1,11 @@
-import "./resizable-panels.css";
 import useSize from "@react-hook/size";
 
 import React from "react";
 
-import {ConfigStore} from "@stores";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
+import {setPaneConfiguration} from "@redux/reducers/ui";
+
+import "./resizable-panels.css";
 
 type ResizablePanelsProps = {
     id: string;
@@ -23,30 +25,26 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         x: 0,
         y: 0,
     });
-    const [sizes, setSizes] = React.useState<number[]>([]);
+    const [sizes, setSizes] = React.useState<number[]>(
+        useAppSelector(
+            state =>
+                state.ui.paneConfiguration.find(el => el.name === props.id)
+                    ?.sizes ||
+                Array(props.children.length).fill(1.0 / props.children.length)
+        )
+    );
     const resizablePanelsRef = React.useRef<HTMLDivElement | null>(null);
     const resizablePanelRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
     const [totalWidth, totalHeight] = useSize(resizablePanelsRef);
-    const store = ConfigStore.useStore();
+    const dispatch = useAppDispatch();
 
     React.useEffect(() => {
-        const storedSizes = store.state.config.find(el => el.id === props.id)
-            ?.config as number[] | undefined;
-        if (storedSizes && storedSizes.length === props.children.length) {
-            setSizes(storedSizes as number[]);
-            return;
-        }
-        const panelSizes: number[] = [];
-        for (let i = 0; i < props.children.length; i++) {
-            sizes.push(100 / props.children.length);
-        }
-        setSizes(panelSizes);
         resizablePanelRefs.current = resizablePanelRefs.current.slice(
             0,
             props.children.length
         );
-    }, [props.children.length, store.state.config, props.id]);
+    }, [props.children.length]);
 
     const startResize = React.useCallback(
         (
@@ -132,10 +130,8 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         const stopResize = (event: MouseEvent) => {
             window.removeEventListener("selectstart", e => e.preventDefault());
             setIsDragging(false);
-            store.dispatch({
-                type: ConfigStore.StoreActions.SetConfig,
-                payload: {config: {id: props.id, config: sizes}},
-            });
+
+            dispatch(setPaneConfiguration({name: props.id, sizes}));
         };
         document.addEventListener("mousemove", resize);
         document.addEventListener("mouseup", stopResize);
@@ -154,7 +150,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         props.direction,
         currentIndex,
         props.id,
-        store,
+        dispatch,
     ]);
 
     return (

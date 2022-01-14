@@ -4,17 +4,22 @@
  * This source code is licensed under the MPLv2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
-import reportWebVitals from "./reportWebVitals";
+import {Provider} from "react-redux";
 
+import "@redux/ipc-renderer-redux";
+import store from "@redux/store";
+
+import App from "./App";
 import "./index.css";
+import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
     <React.StrictMode>
-        <App />
+        <Provider store={store}>
+            <App />
+        </Provider>
     </React.StrictMode>,
     document.getElementById("root")
 );

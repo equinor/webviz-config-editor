@@ -89,7 +89,8 @@ const initialState: StoreState = {
 
 export const StoreReducerInit = (state: StoreState): StoreState => {
     const appData: MainProcessData = ipcRenderer.sendSync("get-app-data");
-    const settings = readSettings(appData.userDataDir);
+    const settingsPath = path.join(appData.userDataDir, ".settings");
+    const settings = readSettings(settingsPath);
     const pluginParser = new PluginParser();
     const jsonSchemaPath = settings.find(el => el.id === "schema")?.value;
     if (jsonSchemaPath && typeof jsonSchemaPath === "string") {
@@ -105,7 +106,7 @@ export const StoreReducerInit = (state: StoreState): StoreState => {
             settings,
             pluginParser,
             log: [],
-            settingsPath: path.join(appData.userDataDir, ".settings"),
+            settingsPath,
         };
     }
     return initialState;

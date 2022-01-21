@@ -1,15 +1,18 @@
-import "./play.css";
 import {Error, OpenInBrowser} from "@mui/icons-material";
 import {CircularProgress, Grid, Typography, useTheme} from "@mui/material";
 
 import React from "react";
 
+import {NotificationType, useNotifications} from "@components/Notifications";
+
+import {useAppSelector} from "@redux/hooks";
+
+import {FilesStore, SettingsStore} from "@stores";
+
 import * as path from "path";
 import {Options, PythonShell} from "python-shell";
 
-import {NotificationType, useNotifications} from "@components/Notifications";
-
-import {FilesStore, SettingsStore} from "@stores";
+import "./play.css";
 
 // const { app } = require("@electron/remote");
 
@@ -20,6 +23,11 @@ export const Play: React.FC = () => {
     const [hasError, setHasError] = React.useState<boolean>(false);
     const [loading, setLoading] = React.useState<boolean>(true);
     const interval = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const pythonInterpreterPath = useAppSelector(
+        state => state.preferences.pathToPythonInterpreter
+    );
+    const webvizTheme = useAppSelector(state => state.preferences.webvizTheme);
 
     const theme = useTheme();
 
@@ -32,18 +40,12 @@ export const Play: React.FC = () => {
                 )?.editorModel.uri.path || ""
             ),
         ];
-        const webvizTheme =
-            store.state.settings.find(setting => setting.id === "theme")
-                ?.value || "";
         if (webvizTheme !== "") {
             args.push("--theme", webvizTheme as string);
         }
         const options: Options = {
             mode: "text",
-            pythonPath:
-                store.state.settings
-                    .find(el => el.id === "python-interpreter")
-                    ?.value.toString() || "",
+            pythonPath: pythonInterpreterPath,
             args,
         };
         const pythonShell = new PythonShell(
@@ -89,11 +91,9 @@ export const Play: React.FC = () => {
     };
 
     React.useEffect(() => {
-        const pythonInterpreter = store.state.settings.find(
-            setting => setting.id === "python-interpreter"
-        );
-        if (!pythonInterpreter || pythonInterpreter.value === "") {
+        if (pythonInterpreterPath === "") {
             setHasError(true);
+            setLoading(false);
             return;
         }
         const pythonShell = buildWebviz();
@@ -132,7 +132,7 @@ export const Play: React.FC = () => {
                         </Grid>
                     </>
                 )}
-                {loading && (
+                {!hasError && loading && (
                     <>
                         <Grid item>
                             <CircularProgress />

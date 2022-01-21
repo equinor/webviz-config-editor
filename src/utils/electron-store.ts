@@ -1,4 +1,62 @@
+import {UpdateSource} from "@shared-types/files";
+
+import {Selection, SelectionDirection, Uri, editor} from "monaco-editor";
+import path from "path";
+
 const ElectronStore = require("electron-store");
+
+const IPosition = {
+    type: "object",
+    properties: {
+        lineNumber: {
+            type: "number",
+        },
+        column: {
+            type: "number",
+        },
+    },
+};
+
+const ICursorState = {
+    type: "object",
+    properties: {
+        inSelectionMode: {
+            type: "boolean",
+        },
+        selectionStart: IPosition,
+        position: IPosition,
+    },
+};
+
+const IViewState = {
+    type: "object",
+    properties: {
+        scrollTop: {
+            type: "number",
+        },
+        scrollTopWithoutViewZones: {
+            type: "number",
+        },
+        scrollLeft: {
+            type: "number",
+        },
+        firstPosition: IPosition,
+        firstPositionDeltaTop: {
+            type: "number",
+        },
+    },
+};
+
+const ICodeEditorViewState = {
+    type: "object",
+    properties: {
+        cursorState: {
+            type: "array",
+            items: ICursorState,
+        },
+        viewState: IViewState,
+    },
+};
 
 const schema = {
     preferences: {
@@ -37,6 +95,12 @@ const schema = {
                     },
                 },
             },
+            recentDocuments: {
+                type: "array",
+                items: {
+                    type: "string",
+                },
+            },
         },
     },
     uiCoach: {
@@ -44,6 +108,32 @@ const schema = {
         properties: {
             initialConfigurationDone: {
                 type: "boolean",
+            },
+        },
+    },
+    files: {
+        type: "object",
+        properties: {
+            activeFile: {
+                type: "string",
+            },
+            files: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        filePath: {
+                            type: "string",
+                        },
+                        editorViewState: ICodeEditorViewState,
+                    },
+                },
+            },
+            recentDocuments: {
+                type: "array",
+                items: {
+                    type: "string",
+                },
             },
         },
     },
@@ -66,6 +156,35 @@ const defaults = {
     },
     uiCoach: {
         initialConfigurationDone: false,
+    },
+    files: {
+        activeFile: "",
+        files: [
+            {
+                filePath: path.join(__dirname, `Untitled-1.yaml`),
+                editorModel: editor.createModel(
+                    "",
+                    "yaml",
+                    Uri.parse(path.join(__dirname, `Untitled-1.yaml`))
+                ),
+                editorViewState: null,
+                navigationItems: [],
+                yamlObjects: [],
+                updateSource: UpdateSource.Editor,
+                currentPageId: "",
+                unsavedChanges: false,
+                selection: Selection.createWithDirection(
+                    0,
+                    0,
+                    0,
+                    0,
+                    SelectionDirection.LTR
+                ),
+                selectedYamlObject: undefined,
+                title: "",
+            },
+        ],
+        recentDocuments: [],
     },
 };
 

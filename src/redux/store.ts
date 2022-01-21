@@ -1,5 +1,8 @@
 import {Middleware, configureStore} from "@reduxjs/toolkit";
+
 import {createLogger} from "redux-logger";
+
+import {filesSlice} from "./reducers/files";
 import {preferencesSlice} from "./reducers/preferences";
 import {uiSlice} from "./reducers/ui";
 import {uiCoachSlice} from "./reducers/uiCoach";
@@ -20,6 +23,7 @@ const store = configureStore({
         ui: uiSlice.reducer,
         preferences: preferencesSlice.reducer,
         uiCoach: uiCoachSlice.reducer,
+        files: filesSlice.reducer,
     },
     middleware: getDefaultMiddleware => [
         ...getDefaultMiddleware().concat(middlewares),

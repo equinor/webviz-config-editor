@@ -7,8 +7,6 @@
 }
 
 .LivePreview__Title {
-    background-color: #292929;
-    color: white;
     text-align: center;
     padding: 8px;
     display: block;
@@ -23,14 +21,11 @@
     overflow: auto;
 }
 
-.LivePreview__MenuWrapper {
-    position: absolute;
+.LivePreview__Menu {
     user-select: none;
-    margin-top: 1px;
+    flex-grow: auto;
 }
 
 .LivePreview__Page {
-    display: block;
-    margin: 16px;
     flex-grow: 4;
 }

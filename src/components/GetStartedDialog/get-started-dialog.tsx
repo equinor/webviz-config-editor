@@ -1,4 +1,3 @@
-import "./get-started-dialog.css";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
@@ -16,11 +15,15 @@ import React from "react";
 
 import {Settings} from "@utils/settings";
 
-import {PreferenceItem} from "@components/Preferences/components/preference-item";
+import {PythonInterpreter} from "@components/Preferences/components/python-interpreter";
+import {WebvizSchema} from "@components/Preferences/components/webviz-schema";
+import {WebvizTheme} from "@components/Preferences/components/webviz-theme";
 
 import {ConfigStore, SettingsStore} from "@stores";
 
 import {SettingMeta} from "@shared-types/settings";
+
+import "./get-started-dialog.css";
 
 const getSettingsFlat = (): SettingMeta[] => {
     let settings: SettingMeta[] = [];
@@ -82,7 +85,6 @@ export const GetStartedDialog: React.FC = () => {
     };
 
     const makeStep = (step: number): React.ReactNode => {
-        const settings = getSettingsFlat();
         if (step === 0) {
             return (
                 <div style={{textAlign: "center"}}>
@@ -103,7 +105,16 @@ export const GetStartedDialog: React.FC = () => {
                 </div>
             );
         }
-        if (step === settings.length + 1) {
+        if (step === 1) {
+            return <PythonInterpreter />;
+        }
+        if (step === 2) {
+            return <WebvizSchema />;
+        }
+        if (step === 3) {
+            return <WebvizTheme />;
+        }
+        if (step === 4) {
             return (
                 <div style={{textAlign: "center"}}>
                     <div className="wrapper">
@@ -132,12 +143,6 @@ export const GetStartedDialog: React.FC = () => {
                 </div>
             );
         }
-        return (
-            <PreferenceItem
-                key={settings[step - 1].id}
-                {...settings[step - 1]}
-            />
-        );
     };
 
     return (

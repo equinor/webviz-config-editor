@@ -1,4 +1,3 @@
-import "./plugin-visualizer.css";
 import {
     Abc,
     DataArray,
@@ -25,6 +24,7 @@ import {
 } from "@mui/material";
 import ReactTagInput from "@pathofdev/react-tag-input";
 import "@pathofdev/react-tag-input/build/index.css";
+import {usePluginParser} from "@services/plugin-parser";
 
 import React from "react";
 import ReactMarkdown from "react-markdown";
@@ -37,6 +37,8 @@ import {PreviewMode} from "@components/LivePreview/live-preview";
 
 import {FilesStore, SettingsStore} from "@stores";
 
+import "./plugin-visualizer.css";
+
 export type PluginVisualizerType = {
     pluginData: LayoutObject;
     mode: PreviewMode;
@@ -47,6 +49,7 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
     const store = FilesStore.useStore();
     const settingsStore = SettingsStore.useStore();
     const theme = useTheme();
+    const pluginParserService = usePluginParser();
     const [openStates, setOpenStates] = React.useState<{
         [key: string]: boolean;
     }>({});
@@ -430,7 +433,7 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
         }
 
         if (data.name) {
-            const plugin = settingsStore.state.pluginParser.getPlugin(
+            const plugin = pluginParserService.pluginParser.getPlugin(
                 data.name
             );
             if (!plugin) {

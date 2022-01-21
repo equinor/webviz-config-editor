@@ -1,15 +1,16 @@
 import {BrowserWindow, app, dialog, ipcMain} from "electron";
 
+import {
+    FileExplorerOptions,
+    FileOptions,
+} from "@shared-types/file-explorer-options";
+
 import {execSync} from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import {Options, PythonShell, PythonShellError} from "python-shell";
 import * as which from "which";
 
-import {
-    FileExplorerOptions,
-    FileOptions,
-} from "@shared-types/file-explorer-options";
 import {createMenu} from "./menu";
 
 export const openFile = () => {
@@ -154,9 +155,12 @@ export const findPythonInterpreters = (): {
     };
 };
 
-export const findWebvizThemes = (pythonPath: string) => {
+export const findWebvizThemes = (
+    pythonPath: string,
+    event: Electron.IpcMainEvent
+) => {
     let themes: string[] = [];
-    let success = true;
+    let success = false;
     const opts: Options = {
         mode: "json",
         pythonPath,
@@ -167,15 +171,13 @@ export const findWebvizThemes = (pythonPath: string) => {
         (err?: PythonShellError, output?: any[]) => {
             if (output && output.length > 0 && "themes" in output[0]) {
                 themes = output[0]["themes"];
+                success = true;
             } else {
                 success = false;
             }
+            event.reply("webviz-themes", {themes, success});
         }
     );
-    return {
-        themes,
-        success,
-    };
 };
 
 export const selectFileDialog = (

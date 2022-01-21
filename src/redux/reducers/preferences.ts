@@ -15,7 +15,7 @@ export const preferencesSlice = createSlice({
             action: PayloadAction<string>
         ) => {
             electronStore.set(
-                "ui.preferences.pathToPythonInterpreter",
+                "preferences.pathToPythonInterpreter",
                 action.payload
             );
             state.pathToPythonInterpreter = action.payload;
@@ -25,7 +25,7 @@ export const preferencesSlice = createSlice({
             action: PayloadAction<string>
         ) => {
             electronStore.set(
-                "ui.preferences.pathToYamlSchemaFile",
+                "preferences.pathToYamlSchemaFile",
                 action.payload
             );
             state.pathToYamlSchemaFile = action.payload;
@@ -34,7 +34,7 @@ export const preferencesSlice = createSlice({
             state: Draft<PreferencesState>,
             action: PayloadAction<string>
         ) => {
-            electronStore.set("ui.preferences.webvizTheme", action.payload);
+            electronStore.set("preferences.webvizTheme", action.payload);
             state.webvizTheme = action.payload;
         },
     },

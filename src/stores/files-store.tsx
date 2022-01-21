@@ -2,18 +2,14 @@ import {ipcRenderer} from "electron";
 
 import React from "react";
 
-import fs from "fs";
-import {Selection, SelectionDirection, Uri, editor} from "monaco-editor";
-import path from "path";
-import {uuid} from "uuidv4";
-// @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import YamlParserWorker from "worker-loader!@workers/parser.worker";
-
 import {createGenericContext} from "@utils/generic-context";
 import {LayoutObject, YamlMetaObject, YamlObject} from "@utils/yaml-parser";
 
 import {useNotifications} from "@components/Notifications";
+
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import YamlParserWorker from "@workers/parser.worker";
 
 import {File} from "@shared-types/file";
 import {LogEntry, LogEntryType} from "@shared-types/log";
@@ -23,6 +19,11 @@ import {
     YamlParserWorkerRequestType,
     YamlParserWorkerResponseType,
 } from "@shared-types/yaml-parser-worker";
+
+import fs from "fs";
+import {Selection, SelectionDirection, Uri, editor} from "monaco-editor";
+import path from "path";
+import {uuid} from "uuidv4";
 
 type ActionMap<
     M extends {

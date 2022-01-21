@@ -1,6 +1,13 @@
-import {Menu, MenuItemConstructorOptions, app, dialog, ipcMain} from "electron";
+import {
+    BrowserWindow,
+    Menu,
+    MenuItemConstructorOptions,
+    app,
+    dialog,
+} from "electron";
 
 import * as path from "path";
+
 import {clearRecentDocuments, getRecentDocuments, openFile} from "./commands";
 
 export const createMenu = () => {
@@ -10,7 +17,10 @@ export const createMenu = () => {
     const recentDocuments = listOfRecentDocuments.map(doc => ({
         label: path.basename(doc),
         click() {
-            ipcMain.emit("file_open", [doc]);
+            const window = BrowserWindow.getFocusedWindow();
+            if (window) {
+                window.webContents.send("file-opened", [doc]);
+            }
         },
     }));
     recentDocuments.push({
@@ -48,7 +58,10 @@ export const createMenu = () => {
                     label: "New File",
                     accelerator: "CmdOrCtrl+N",
                     click() {
-                        ipcMain.emit("new-file");
+                        const window = BrowserWindow.getFocusedWindow();
+                        if (window) {
+                            window.webContents.send("new-file");
+                        }
                     },
                 },
                 {
@@ -66,7 +79,10 @@ export const createMenu = () => {
                     label: "Save",
                     accelerator: "CmdOrCtrl+S",
                     click() {
-                        ipcMain.emit("save-file");
+                        const window = BrowserWindow.getFocusedWindow();
+                        if (window) {
+                            window.webContents.send("save-file");
+                        }
                     },
                 },
                 {
@@ -89,10 +105,11 @@ export const createMenu = () => {
                             })
                             .then((fileObj: any) => {
                                 if (!fileObj.canceled && fileObj.filePath) {
-                                    ipcMain.emit(
-                                        "save-file-as",
-                                        fileObj.filePath
-                                    );
+                                    const window =
+                                        BrowserWindow.getFocusedWindow();
+                                    if (window) {
+                                        window.webContents.send("save-file-as");
+                                    }
                                 }
                             })
                             .catch(err => {

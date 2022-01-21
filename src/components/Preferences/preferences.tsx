@@ -4,6 +4,7 @@ import React from "react";
 
 import {PythonInterpreter} from "./components/python-interpreter";
 import {WebvizSchema} from "./components/webviz-schema";
+import {WebvizTheme} from "./components/webviz-theme";
 import "./preferences.css";
 
 export const Preferences: React.FC = () => {
@@ -23,6 +24,7 @@ export const Preferences: React.FC = () => {
             <div className="Preferences__Category">Webviz</div>
             <div className="Preferences__CategoryContent">
                 <WebvizSchema />
+                <WebvizTheme />
             </div>
         </div>
     );

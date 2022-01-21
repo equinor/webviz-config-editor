@@ -1,4 +1,3 @@
-import "./live-preview.css";
 import {Edit as EditIcon, Visibility} from "@mui/icons-material";
 import {
     Paper,
@@ -14,13 +13,15 @@ import React from "react";
 
 import {LayoutObject, YamlLayoutObjectType} from "@utils/yaml-parser";
 
-// import { MenuWrapper } from "../MenuWrapper";
 import {PluginVisualizer} from "@components/PluginVisualizer";
 
 import {FilesStore} from "@stores";
 import {UpdateSource} from "@stores/files-store";
 
 import {PropertyNavigationType} from "@shared-types/navigation";
+import {Menu} from "../Menu";
+
+import "./live-preview.css";
 
 type LivePreviewProps = {};
 
@@ -148,7 +149,21 @@ export const LivePreview: React.FC<LivePreviewProps> = props => {
                 </Stack>
             </Paper>
             <div className="LivePreview__Content">
-                <div className="LivePreview__Menu" />
+                <div className="LivePreview__Menu">
+                    <Menu
+                        setProps={(id: string) =>
+                            store.dispatch({
+                                type: FilesStore.StoreActions.SetCurrentPage,
+                                payload: {
+                                    pageId: id,
+                                    source: FilesStore.UpdateSource.Preview,
+                                },
+                            })
+                        }
+                        selectedItem={selectedNavigationItem}
+                        navigationItems={navigationItems}
+                    />
+                </div>
                 <div className="LivePreview__Page">
                     {currentPageContent.map((plugin: LayoutObject) => (
                         <PluginVisualizer
@@ -161,19 +176,4 @@ export const LivePreview: React.FC<LivePreviewProps> = props => {
             </div>
         </div>
     );
-
-    /*
-    <MenuWrapper
-                        setProps={(props) =>
-                            store.dispatch({
-                                type: FilesStore.StoreActions.SetCurrentPage,
-                                payload: { pageId: props.url, source: FilesStore.UpdateSource.Preview },
-                            })
-                        }
-                        selectedItem={selectedNavigationItem}
-                        navigationItems={navigationItems}
-                        menuBarPosition="left"
-                        inline={true}
-                    />
-    */
 };

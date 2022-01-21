@@ -1,17 +1,9 @@
 import {
-    Button,
     CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
     FormControl,
     FormHelperText,
-    Grid,
     MenuItem,
     Select,
-    TextField,
 } from "@mui/material";
 
 import {ipcRenderer} from "electron";
@@ -103,8 +95,21 @@ export const PythonInterpreter: React.FC = props => {
     }, [localValue]);
 
     const handleValueChanged = (value: string) => {
+        const opts: FileExplorerOptions = {
+            filter: [
+                {
+                    name: "Python interpreter",
+                    extensions: ["*"],
+                },
+            ],
+            defaultPath: path.dirname(localValue as string),
+        };
         if (value === "custom") {
-            setDialogOpen(true);
+            ipcRenderer.invoke("select-file", opts).then(files => {
+                if (files) {
+                    setLocalValue(files[0]);
+                }
+            });
             return;
         }
         setLocalValue(value);
@@ -144,9 +149,7 @@ export const PythonInterpreter: React.FC = props => {
                                 }
                                 className="PreferenceInput"
                                 displayEmpty
-                                renderValue={(
-                                    value: string | number | boolean
-                                ) =>
+                                renderValue={(value: string) =>
                                     value === "" ? (
                                         <i>Please select...</i>
                                     ) : (
@@ -171,65 +174,6 @@ export const PythonInterpreter: React.FC = props => {
                             )}
                         </>
                     )}
-                    <Dialog
-                        open={dialogOpen}
-                        onClose={() => setDialogOpen(false)}
-                    >
-                        <DialogTitle>Path to Python Interpreter</DialogTitle>
-                        <DialogContent>
-                            <DialogContentText>
-                                Select the Python interpreter that you are using
-                                with Webviz.
-                            </DialogContentText>
-                            <Grid
-                                container
-                                flexDirection="row"
-                                alignItems="center"
-                                spacing={2}
-                            >
-                                <Grid item>
-                                    <TextField
-                                        margin="dense"
-                                        type="text"
-                                        aria-readonly
-                                        value={tempValue}
-                                    />
-                                </Grid>
-                                <Grid item>
-                                    <Button
-                                        onClick={() =>
-                                            openFileDialog(
-                                                [
-                                                    {
-                                                        name: "Python interpreter",
-                                                        extensions: ["*"],
-                                                    },
-                                                ],
-                                                path.dirname(
-                                                    localValue as string
-                                                )
-                                            )
-                                        }
-                                    >
-                                        Change
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    setDialogOpen(false);
-                                    setLocalValue(tempValue);
-                                }}
-                            >
-                                Save
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
                 </FormControl>
             </div>
         </div>

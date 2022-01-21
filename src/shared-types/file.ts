@@ -1,4 +1,4 @@
-import { editor, Selection } from "monaco-editor";
+import {Selection, editor} from "monaco-editor/esm/vs/editor/editor.api";
 
 export type File = {
     uuid: string;

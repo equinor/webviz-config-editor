@@ -4,8 +4,10 @@
  * This source code is licensed under the MPLv2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
-import "./App.css";
-import {ThemeProvider, createTheme, useMediaQuery} from "@mui/material";
+import {ThemeProvider, createTheme} from "@mui/material";
+import {IpcService} from "@services/ipc-service";
+import {PluginParserService} from "@services/plugin-parser";
+import {YamlParserService} from "@services/yaml-parser";
 
 import React from "react";
 
@@ -15,10 +17,12 @@ import {MainWindow} from "@components/MainWindow";
 import {NotificationsProvider} from "@components/Notifications";
 import {StoreProvider} from "@components/StoreProvider/store-provider";
 
-import {useAppDispatch} from "@redux/hooks";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
 import {setTheme} from "@redux/reducers/ui";
 
 import {Themes} from "@shared-types/ui";
+
+import "./App.css";
 
 export const ColorModeContext = React.createContext({
     toggleColorMode: () => {},
@@ -27,7 +31,7 @@ export const ColorModeContext = React.createContext({
 function App(): JSX.Element {
     const dispatch = useAppDispatch();
     const [mode, setMode] = React.useState<"light" | "dark">(
-        useMediaQuery("(prefers-color-scheme: dark)") ? "dark" : "light"
+        useAppSelector(state => state.ui.settings.theme)
     );
     const colorMode = React.useMemo(
         () => ({
@@ -58,8 +62,14 @@ function App(): JSX.Element {
                 <ThemeProvider theme={theme}>
                     <NotificationsProvider>
                         <StoreProvider>
-                            <GetStartedDialog />
-                            <MainWindow />
+                            <YamlParserService>
+                                <PluginParserService>
+                                    <IpcService>
+                                        <GetStartedDialog />
+                                        <MainWindow />
+                                    </IpcService>
+                                </PluginParserService>
+                            </YamlParserService>
                         </StoreProvider>
                     </NotificationsProvider>
                 </ThemeProvider>

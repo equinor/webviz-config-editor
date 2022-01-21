@@ -1,18 +1,20 @@
 /* eslint-disable import/order */
-/* eslint-disable import/first */
-import * as ElectronLog from "electron-log";
-import moduleAlias from "module-alias";
 
-Object.assign(console, ElectronLog.functions);
-moduleAlias.addAliases({
-    "@constants": `${__dirname}/../src/constants`,
-    "@models": `${__dirname}/../src/models`,
-    "@redux": `${__dirname}/../src/redux`,
-    "@utils": `${__dirname}/../src/utils`,
-    "@src": `${__dirname}/../src/`,
-    "@root": `${__dirname}/../`,
-});
+/* eslint-disable import/first */
 import terminal from "../cli/terminal";
+
+import {BrowserWindow, app, ipcMain} from "electron";
+import installExtension, {
+    REACT_DEVELOPER_TOOLS,
+} from "electron-devtools-installer";
+import * as ElectronLog from "electron-log";
+import ElectronStore from "electron-store";
+
+import {FileExplorerOptions} from "@shared-types/file-explorer-options";
+
+import moduleAlias from "module-alias";
+import * as path from "path";
+
 import {
     checkIfPythonInterpreter,
     findPythonInterpreters,
@@ -23,14 +25,15 @@ import {
 import {PROCESS_ENV} from "./env";
 import {createMenu} from "./menu";
 
-import {BrowserWindow, app, ipcMain} from "electron";
-import ElectronStore from 'electron-store';
-import installExtension, {
-    REACT_DEVELOPER_TOOLS,
-} from "electron-devtools-installer";
-import * as path from "path";
-
-import {FileExplorerOptions} from "@shared-types/file-explorer-options";
+Object.assign(console, ElectronLog.functions);
+moduleAlias.addAliases({
+    "@constants": `${__dirname}/../src/constants`,
+    "@models": `${__dirname}/../src/models`,
+    "@redux": `${__dirname}/../src/redux`,
+    "@utils": `${__dirname}/../src/utils`,
+    "@src": `${__dirname}/../src/`,
+    "@root": `${__dirname}/../`,
+});
 
 const isDev = PROCESS_ENV.NODE_ENV === "development";
 
@@ -63,7 +66,7 @@ ipcMain.on("check-if-python-interpreter", (event, pythonPath) => {
 });
 
 ipcMain.on("get-webviz-themes", (event, pythonInterpreter) => {
-    event.reply("webviz-themes", findWebvizThemes(pythonInterpreter));
+    findWebvizThemes(pythonInterpreter, event);
 });
 
 const appTitle = "Webviz Config Editor";
@@ -81,7 +84,6 @@ function createWindow() {
             contextIsolation: false,
             nodeIntegrationInWorker: true,
             webSecurity: false,
-            preload: path.join(__dirname, "preload.js"),
         },
     });
 

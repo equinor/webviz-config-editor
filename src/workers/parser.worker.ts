@@ -7,15 +7,15 @@ import {
 
 const yamlParser = new YamlParser();
 
+// @ts-ignore
 /* eslint-disable-next-line */
-const ctx: Worker = self as any;
-
-/* eslint-disable-next-line */
-ctx.addEventListener("message", event => {
+self.addEventListener("message", event => {
     switch (event.data.type) {
         case YamlParserWorkerRequestType.Parse:
             yamlParser.parse(event.data.text);
-            ctx.postMessage({
+            // @ts-ignore
+            /* eslint-disable-next-line */
+            self.postMessage({
                 type: YamlParserWorkerResponseType.Parsed,
                 objects: yamlParser.getObjects(),
                 title: yamlParser.getTitle(),
@@ -23,7 +23,9 @@ ctx.addEventListener("message", event => {
             });
             break;
         case YamlParserWorkerRequestType.GetClosestObject:
-            ctx.postMessage({
+            // @ts-ignore
+            /* eslint-disable-next-line */
+            self.postMessage({
                 type: YamlParserWorkerResponseType.ClosestObject,
                 object: yamlParser.findClosestObject(
                     event.data.startLineNumber,
@@ -36,7 +38,9 @@ ctx.addEventListener("message", event => {
             });
             break;
         case YamlParserWorkerRequestType.GetObjectById:
-            ctx.postMessage({
+            // @ts-ignore
+            /* eslint-disable-next-line */
+            self.postMessage({
                 type: YamlParserWorkerResponseType.ObjectById,
                 object: yamlParser.getObjectById(event.data.id),
             });

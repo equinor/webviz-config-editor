@@ -1,4 +1,4 @@
-import "./editor.css";
+import {useYamlSchema} from "@hooks/useYamlSchema";
 import {
     AssistantPhoto,
     Error as ErrorIcon,
@@ -9,53 +9,63 @@ import {
 } from "@mui/icons-material";
 import {Badge, Button, Grid, Paper, Tooltip, useTheme} from "@mui/material";
 import useSize from "@react-hook/size";
+import {useYamlParser} from "@services/yaml-parser";
 
 import {ipcRenderer} from "electron";
 
 import React from "react";
-import MonacoEditor, {
-    EditorDidMount,
-    EditorWillMount,
-    monaco,
-} from "react-monaco-editor";
-
-import {setDiagnosticsOptions} from "monaco-yaml";
-import * as path from "path";
-import {uuid} from "uuidv4";
-// @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import EditorWorker from "worker-loader!monaco-editor/esm/vs/editor/editor.worker";
-// @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import YamlWorker from "worker-loader!monaco-yaml/lib/esm/yaml.worker";
-
-import {preprocessJsonSchema} from "@utils/json-schema-preprocessor";
+import MonacoEditor, {EditorDidMount, monaco} from "react-monaco-editor";
 
 import {FileTabs} from "@components/FileTabs";
-import {NotificationType, useNotifications} from "@components/Notifications";
 import {ResizablePanels} from "@components/ResizablePanels";
 
-import {useAppDispatch} from "@redux/hooks";
-import {setCurrentPage} from "@redux/reducers/ui";
-
-import {FilesStore, SettingsStore} from "@stores";
-
-import {Pages} from "@shared-types/ui";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
+import {addNewFile, setActiveFile} from "@redux/reducers/files";
+import {openFile} from "@redux/thunks";
 
 // @ts-ignore
+import {Environment, languages} from "monaco-editor";
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker";
+// @ts-ignore
+import "monaco-yaml/lib/esm/monaco.contribution";
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import YamlWorker from "monaco-yaml/lib/esm/yaml.worker";
+// @ts-ignore
+import * as path from "path";
+import {uuid} from "uuidv4";
+
+import "./editor.css";
+
+declare global {
+    interface Window {
+        MonacoEnvironment: Environment;
+    }
+}
+
 window.MonacoEnvironment = {
-    // @ts-ignore
-    getWorker(workerId, label) {
-        if (label === "yaml") {
-            return new YamlWorker();
+    getWorker(moduleId, label) {
+        console.log(`Current language: ${label}`);
+        switch (label) {
+            case "editorWorkerService":
+                return new EditorWorker();
+            case "yaml":
+                return new YamlWorker();
+            default:
+                throw new Error(`Unknown label ${label}`);
         }
-        return new EditorWorker();
     },
 };
+
+// @ts-ignore
+const {yaml} = languages || {};
 
 type EditorProps = {};
 
 export const Editor: React.FC<EditorProps> = props => {
+    const [code, setCode] = React.useState<string>("");
     const [fontSize, setFontSize] = React.useState<number>(1);
     const [noModels, setNoModels] = React.useState<boolean>(false);
     const [selection, setSelection] = React.useState<monaco.ISelection | null>(
@@ -67,13 +77,13 @@ export const Editor: React.FC<EditorProps> = props => {
         null
     );
 
+    const yamlParser = useYamlParser();
+
     const monacoEditorRef =
         React.useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const editorRef = React.useRef<HTMLDivElement | null>(null);
     const monacoRef = React.useRef<typeof monaco | null>(null);
 
-    const store = FilesStore.useStore();
-    const settingsStore = SettingsStore.useStore();
     const [totalWidth, totalHeight] = useSize(editorRef);
 
     const timeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -81,7 +91,17 @@ export const Editor: React.FC<EditorProps> = props => {
     const theme = useTheme();
     const dispatch = useAppDispatch();
 
-    const notifications = useNotifications();
+    const selectedYamlObject = useAppSelector(
+        state =>
+            state.files.files.find(el => el.filePath === state.files.activeFile)
+                ?.selectedYamlObject
+    );
+    const files = useAppSelector(state => state.files.files);
+    const activeFile = useAppSelector(state => state.files.activeFile);
+    const recentDocuments =
+        useAppSelector(state => state.ui.recentDocuments) || [];
+
+    const schemaLoaded = useYamlSchema(yaml);
 
     const fontSizes = [
         0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
@@ -117,18 +137,14 @@ export const Editor: React.FC<EditorProps> = props => {
             if (e.reason === monaco.editor.CursorChangeReason.ContentFlush) {
                 return;
             }
-            store.dispatch({
-                type: FilesStore.StoreActions.UpdateSelection,
-                payload: {
-                    selection: new monaco.Selection(
-                        e.position.lineNumber,
-                        e.position.column,
-                        e.position.lineNumber,
-                        e.position.column
-                    ),
-                    source: FilesStore.UpdateSource.Editor,
-                },
-            });
+            yamlParser.updateSelection(
+                new monaco.Selection(
+                    e.position.lineNumber,
+                    e.position.column,
+                    e.position.lineNumber,
+                    e.position.column
+                )
+            );
         }
     };
 
@@ -148,13 +164,7 @@ export const Editor: React.FC<EditorProps> = props => {
             if (e.reason === monaco.editor.CursorChangeReason.ContentFlush) {
                 return;
             }
-            store.dispatch({
-                type: FilesStore.StoreActions.UpdateSelection,
-                payload: {
-                    selection: e.selection,
-                    source: FilesStore.UpdateSource.Editor,
-                },
-            });
+            yamlParser.updateSelection(e.selection);
         }
     };
 
@@ -174,20 +184,13 @@ export const Editor: React.FC<EditorProps> = props => {
     );
 
     React.useEffect(() => {
-        if (store.state.updateSource === FilesStore.UpdateSource.Plugin) {
-            return;
-        }
-        if (
-            monacoEditorRef.current &&
-            selection &&
-            store.state.selectedYamlObject
-        ) {
+        if (monacoEditorRef.current && selection && selectedYamlObject) {
             updateLineDecorations([
                 {
                     range: new monaco.Range(
-                        store.state.selectedYamlObject.startLineNumber,
+                        selectedYamlObject.startLineNumber,
                         0,
-                        store.state.selectedYamlObject.endLineNumber,
+                        selectedYamlObject.endLineNumber,
                         0
                     ),
                     options: {
@@ -198,24 +201,20 @@ export const Editor: React.FC<EditorProps> = props => {
                 },
             ]);
             monacoEditorRef.current.revealLinesInCenterIfOutsideViewport(
-                store.state.selectedYamlObject.startLineNumber,
-                store.state.selectedYamlObject.endLineNumber
+                selectedYamlObject.startLineNumber,
+                selectedYamlObject.endLineNumber
             );
         }
-    }, [store.state.selectedYamlObject, store.state.updateSource]);
+    }, [selectedYamlObject]);
 
-    const handleFileChange = (fileId: string) => {
-        const file = store.state.files.find(
-            el => el.uuid === store.state.activeFileUuid
-        );
-        if (file && monacoEditorRef.current) {
-            store.dispatch({
-                type: FilesStore.StoreActions.SetActiveFile,
-                payload: {
-                    uuid: fileId,
+    const handleFileChange = (filePath: string) => {
+        if (monacoEditorRef.current) {
+            dispatch(
+                setActiveFile({
+                    filePath,
                     viewState: monacoEditorRef.current.saveViewState(),
-                },
-            });
+                })
+            );
         }
         setTimeout(handleMarkersChange, 2000);
     };
@@ -232,13 +231,7 @@ export const Editor: React.FC<EditorProps> = props => {
                 clearTimeout(parserTimer.current);
             }
             parserTimer.current = setTimeout(() => {
-                store.dispatch({
-                    type: FilesStore.StoreActions.UpdateCurrentContent,
-                    payload: {
-                        content: model.getValue(),
-                        source: FilesStore.UpdateSource.Editor,
-                    },
-                });
+                yamlParser.parse(model.getValue());
             }, 200);
         }
     };
@@ -267,6 +260,7 @@ export const Editor: React.FC<EditorProps> = props => {
             handleCursorSelectionChange
         );
         monacoRef.current.editor.onDidChangeMarkers(handleMarkersChange);
+        editor?.setModel(monaco.editor.createModel("", "yaml"));
     };
 
     React.useEffect(() => {
@@ -277,26 +271,13 @@ export const Editor: React.FC<EditorProps> = props => {
     }, [fontSize, monacoEditorRef]);
 
     React.useEffect(() => {
-        if (
-            store.state.updateSource === FilesStore.UpdateSource.Plugin &&
-            monacoEditorRef.current
-        ) {
-            const model = monacoEditorRef.current.getModel();
-            if (model) {
-                model.setValue(store.state.currentEditorContent);
-            }
-        }
-    }, [store.state.currentEditorContent, store.state.updateSource]);
-
-    React.useEffect(() => {
-        const file = store.state.files.find(
-            el => el.uuid === store.state.activeFileUuid
-        );
-        if (!file) {
+        const file = files.find(el => el.filePath === activeFile);
+        if (files.length === 0) {
             setNoModels(true);
             return;
         }
         if (
+            file &&
             monacoEditorRef.current &&
             file.editorModel !== monacoEditorRef.current.getModel()
         ) {
@@ -307,58 +288,10 @@ export const Editor: React.FC<EditorProps> = props => {
             monacoEditorRef.current.focus();
             setNoModels(false);
         }
-    }, [store.state.activeFileUuid, store.state.files]);
-
-    const handleEditorWillMount: EditorWillMount = _ => {
-        let jsonSchema;
-        const schema = settingsStore.state.settings.find(
-            el => el.id === "schema"
-        );
-        if (schema && schema.value !== "") {
-            try {
-                jsonSchema = preprocessJsonSchema(schema.value as string);
-            } catch (e) {
-                notifications.appendNotification({
-                    type: NotificationType.ERROR,
-                    message: "Invalid JSON schema defined.",
-                    action: {
-                        label: "Change",
-                        action: () => {},
-                    },
-                });
-                return;
-            }
-            setDiagnosticsOptions({
-                validate: true,
-                enableSchemaRequest: true,
-                hover: true,
-                format: true,
-                completion: true,
-                schemas: [
-                    {
-                        fileMatch: ["*"],
-                        schema: jsonSchema,
-                        uri: `file://${schema.value || ""}`,
-                    },
-                ],
-            });
-        } else {
-            notifications.appendNotification({
-                type: NotificationType.ERROR,
-                message:
-                    "No Webviz JSON schema defined. Select a schema in preferences.",
-                action: {
-                    label: "Preferences",
-                    action: () => {
-                        dispatch(setCurrentPage(Pages.Preferences));
-                    },
-                },
-            });
-        }
-    };
+    }, [activeFile, files]);
 
     const handleNewFileClick = () => {
-        store.dispatch({type: FilesStore.StoreActions.AddNewFile, payload: {}});
+        dispatch(addNewFile());
     };
 
     const selectMarker = (marker: monaco.editor.IMarker) => {
@@ -408,18 +341,10 @@ export const Editor: React.FC<EditorProps> = props => {
                 <br />
                 <h3>Recent</h3>
                 <ul>
-                    {store.state.recentDocuments.map(doc => (
+                    {recentDocuments.map(doc => (
                         <li key={`recent-document:${doc}`}>
                             <Tooltip title={doc} placement="right">
-                                <Button
-                                    onClick={() =>
-                                        store.dispatch({
-                                            type: FilesStore.StoreActions
-                                                .OpenFile,
-                                            payload: {filePath: doc},
-                                        })
-                                    }
-                                >
+                                <Button onClick={() => openFile(doc, dispatch)}>
                                     {path.basename(doc)}
                                 </Button>
                             </Tooltip>
@@ -435,7 +360,6 @@ export const Editor: React.FC<EditorProps> = props => {
                         defaultValue=""
                         className="YamlEditor"
                         editorDidMount={handleEditorDidMount}
-                        editorWillMount={handleEditorWillMount}
                         theme={theme.palette.mode === "dark" ? "vs-dark" : "vs"}
                         options={{
                             tabSize: 2,

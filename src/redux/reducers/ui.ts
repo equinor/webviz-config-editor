@@ -40,8 +40,20 @@ export const uiSlice = createSlice({
                 });
             }
         },
+        setRecentDocuments: (
+            state: Draft<UiState>,
+            action: PayloadAction<string[]>
+        ) => {
+            electronStore.set("ui.recentDocuments", action.payload);
+            state.recentDocuments = action.payload;
+        },
     },
 });
 
-export const {setCurrentPage, setTheme, setPaneConfiguration} = uiSlice.actions;
+export const {
+    setCurrentPage,
+    setTheme,
+    setPaneConfiguration,
+    setRecentDocuments,
+} = uiSlice.actions;
 export default uiSlice.reducer;

@@ -1,3 +1,9 @@
+export enum ItemType {
+    PAGE = "page",
+    GROUP = "group",
+    SECTION = "section",
+}
+
 export interface PropertyNavigationItemType {
     type: string;
     title: string;
@@ -50,4 +56,8 @@ export interface SectionType extends PropertySectionType {
     content: (GroupType | PageType)[];
 }
 
-export type NavigationType = SectionType[] | GroupType[] | PageType[] | (GroupType | PageType)[];
+export type NavigationType =
+    | SectionType[]
+    | GroupType[]
+    | PageType[]
+    | (GroupType | PageType)[];

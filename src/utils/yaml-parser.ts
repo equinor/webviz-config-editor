@@ -1,11 +1,11 @@
-import yaml from "yaml";
-
 import {
     PropertyGroupType,
     PropertyNavigationType,
     PropertyPageType,
     PropertySectionType,
 } from "@shared-types/navigation";
+
+import yaml from "yaml";
 
 type Unpacked<T> = T extends (infer U)[] ? U : T;
 
@@ -225,7 +225,8 @@ export class YamlParser {
         this.reset();
         this.parsedString = value;
         const tokens = new yaml.Parser().parse(value);
-        Object.values(tokens).forEach(token => {
+        /* eslint-disable no-restricted-syntax */
+        for (const token of tokens) {
             /*
             At the outermost level, expected tokens are:
             - comment (ignore)
@@ -235,7 +236,7 @@ export class YamlParser {
             if (YamlParser.isDocumentToken(token)) {
                 this.parseDocument(token as yaml.CST.Document);
             }
-        });
+        }
     }
 
     private static isScalarKeyItem(item: BlockMapItem): boolean {

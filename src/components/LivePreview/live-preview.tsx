@@ -8,6 +8,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
+import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
 
@@ -15,8 +16,7 @@ import {LayoutObject, YamlLayoutObjectType} from "@utils/yaml-parser";
 
 import {PluginVisualizer} from "@components/PluginVisualizer";
 
-import {FilesStore} from "@stores";
-import {UpdateSource} from "@stores/files-store";
+import {useAppSelector} from "@redux/hooks";
 
 import {PropertyNavigationType} from "@shared-types/navigation";
 import {Menu} from "../Menu";
@@ -50,60 +50,52 @@ export const LivePreview: React.FC<LivePreviewProps> = props => {
     const [currentPageContent, setCurrentPageContent] = React.useState<
         LayoutObject[]
     >([]);
-    const store = FilesStore.useStore();
     const [selectedNavigationItem, setSelectedNavigationItem] =
         React.useState<SelectedNavigationItem | null>(null);
     const theme = useTheme();
 
+    const yamlParser = useYamlParser();
+    const file = useAppSelector(state =>
+        state.files.files.find(el => el.filePath === state.files.activeFile)
+    );
+
     React.useEffect(() => {
-        if (store.state.updateSource !== FilesStore.UpdateSource.Editor) {
-            return;
-        }
-        if (store.state.currentYamlObjects.length === 0) {
+        if (!file || file.yamlObjects.length === 0) {
             setNavigationItems([]);
             setCurrentPageContent([]);
             setTitle("");
             return;
         }
 
-        setTitle(store.state.title);
-        setNavigationItems(store.state.navigationItems);
-    }, [
-        store.state.currentYamlObjects,
-        store.state.updateSource,
-        store.state.title,
-        store.state.navigationItems,
-    ]);
+        setTitle(file.title);
+        setNavigationItems(file.navigationItems);
+    }, [file, file?.yamlObjects]);
 
     React.useEffect(() => {
-        if (store.state.updateSource === UpdateSource.Plugin) {
-            return;
-        }
-        const object: LayoutObject | undefined = store.state
-            .selectedYamlObject as LayoutObject | undefined;
+        const object: LayoutObject | undefined = file?.selectedYamlObject as
+            | LayoutObject
+            | undefined;
         setCurrentPageContent((object?.children as LayoutObject[]) || []);
-    }, [store.state.currentPageId, store.state.updateSource]);
+    }, [file?.currentPageId, file?.selectedYamlObject]);
 
     React.useEffect(() => {
         if (
-            store.state.selectedYamlObject &&
-            "type" in store.state.selectedYamlObject &&
-            "number" in store.state.selectedYamlObject &&
-            (store.state.selectedYamlObject["type"] ===
-                YamlLayoutObjectType.Section ||
-                store.state.selectedYamlObject["type"] ===
+            file?.selectedYamlObject &&
+            "type" in file.selectedYamlObject &&
+            "number" in file.selectedYamlObject &&
+            (file.selectedYamlObject["type"] === YamlLayoutObjectType.Section ||
+                file.selectedYamlObject["type"] ===
                     YamlLayoutObjectType.Group ||
-                store.state.selectedYamlObject["type"] ===
-                    YamlLayoutObjectType.Page)
+                file.selectedYamlObject["type"] === YamlLayoutObjectType.Page)
         ) {
             setSelectedNavigationItem({
-                type: store.state.selectedYamlObject["type"],
-                number: store.state.selectedYamlObject["number"],
+                type: file.selectedYamlObject["type"],
+                number: file.selectedYamlObject["number"],
             });
         } else {
             setSelectedNavigationItem(null);
         }
-    }, [store.state.selectedYamlObject]);
+    }, [file?.selectedYamlObject]);
 
     return (
         <div className="LivePreview">
@@ -151,15 +143,7 @@ export const LivePreview: React.FC<LivePreviewProps> = props => {
             <div className="LivePreview__Content">
                 <div className="LivePreview__Menu">
                     <Menu
-                        setProps={(id: string) =>
-                            store.dispatch({
-                                type: FilesStore.StoreActions.SetCurrentPage,
-                                payload: {
-                                    pageId: id,
-                                    source: FilesStore.UpdateSource.Preview,
-                                },
-                            })
-                        }
+                        setProps={(id: string) => yamlParser.setCurrentPage(id)}
                         selectedItem={selectedNavigationItem}
                         navigationItems={navigationItems}
                     />

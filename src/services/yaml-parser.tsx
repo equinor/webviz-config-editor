@@ -2,10 +2,6 @@ import React from "react";
 
 import {createGenericContext} from "@utils/generic-context";
 
-// @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import YamlParserWorker from "@workers/parser.worker";
-
 import {useAppDispatch} from "@redux/hooks";
 import {
     setFileObjects,
@@ -19,6 +15,9 @@ import {
 } from "@shared-types/yaml-parser-worker";
 
 import {Selection} from "monaco-editor";
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import YamlParserWorker from "worker-loader!@workers/parser.worker";
 
 type Context = {
     parse: (value: string) => void;

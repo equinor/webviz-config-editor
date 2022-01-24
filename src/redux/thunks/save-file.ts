@@ -17,6 +17,11 @@ export function saveFile(
             flag: "w",
         });
         dispatch(markAsSaved(filePath));
+        const notification: Notification = {
+            type: NotificationType.SUCCESS,
+            message: `${filePath} successfully saved.`,
+        };
+        dispatch(addNotification(notification));
     } catch (e) {
         const notification: Notification = {
             type: NotificationType.ERROR,
@@ -38,6 +43,11 @@ export function saveFileAs(
             flag: "w",
         });
         dispatch(changeFilePath({oldFilePath, newFilePath}));
+        const notification: Notification = {
+            type: NotificationType.SUCCESS,
+            message: `${newFilePath} successfully saved.`,
+        };
+        dispatch(addNotification(notification));
     } catch (e) {
         const notification: Notification = {
             type: NotificationType.ERROR,

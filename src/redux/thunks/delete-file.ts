@@ -15,7 +15,7 @@ export function deleteFile(filePath: string, dispatch: AppDispatch) {
     } catch (e) {
         const notification: Notification = {
             type: NotificationType.ERROR,
-            message: `Could not open file '${filePath}'. ${e}`,
+            message: `Could not delete file '${filePath}'. ${e}`,
         };
         dispatch(addNotification(notification));
     }

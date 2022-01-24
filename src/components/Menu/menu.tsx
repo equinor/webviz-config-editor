@@ -4,6 +4,8 @@ import React from "react";
 
 import {SelectedNavigationItem} from "@components/LivePreview/live-preview";
 
+import {useAppSelector} from "@redux/hooks";
+
 import {
     GroupType,
     NavigationItemType,
@@ -158,11 +160,23 @@ export const Menu: React.FC<MenuProps> = props => {
     const [navigationItemsWithAssignedIds, setNavigationsItemsWithAssignedIds] =
         React.useState<NavigationType>([]);
 
+    const currentPageId = useAppSelector(
+        state =>
+            state.files.files.find(el => el.filePath === state.files.activeFile)
+                ?.currentPageId || ""
+    );
+
     React.useEffect(() => {
         setNavigationsItemsWithAssignedIds(
             makeNavigationItemsWithAssignedIds(props.navigationItems)
         );
     }, [props.navigationItems]);
+
+    React.useEffect(() => {
+        if (currentPageId !== "") {
+            setActivePageId(currentPageId);
+        }
+    }, [currentPageId]);
 
     React.useEffect(() => {
         props.setProps(activePageId);
@@ -215,7 +229,9 @@ export const Menu: React.FC<MenuProps> = props => {
                     navigationItemsWithAssignedIds,
                     false,
                     activePageId,
-                    url => setActivePageId(url)
+                    url => {
+                        setActivePageId(url);
+                    }
                 )}
             {props.navigationItems.length === 0 && (
                 <i>No navigation items...</i>

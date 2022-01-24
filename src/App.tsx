@@ -15,7 +15,6 @@ import {GetStartedDialog} from "@components/GetStartedDialog";
 import {MainProcessDataProvider} from "@components/MainProcessDataProvider";
 import {MainWindow} from "@components/MainWindow";
 import {NotificationsProvider} from "@components/Notifications";
-import {StoreProvider} from "@components/StoreProvider/store-provider";
 
 import {useAppDispatch, useAppSelector} from "@redux/hooks";
 import {setTheme} from "@redux/reducers/ui";
@@ -61,16 +60,14 @@ function App(): JSX.Element {
             <ColorModeContext.Provider value={colorMode}>
                 <ThemeProvider theme={theme}>
                     <NotificationsProvider>
-                        <StoreProvider>
-                            <YamlParserService>
-                                <PluginParserService>
-                                    <IpcService>
-                                        <GetStartedDialog />
-                                        <MainWindow />
-                                    </IpcService>
-                                </PluginParserService>
-                            </YamlParserService>
-                        </StoreProvider>
+                        <YamlParserService>
+                            <PluginParserService>
+                                <IpcService>
+                                    <GetStartedDialog />
+                                    <MainWindow />
+                                </IpcService>
+                            </PluginParserService>
+                        </YamlParserService>
                     </NotificationsProvider>
                 </ThemeProvider>
             </ColorModeContext.Provider>

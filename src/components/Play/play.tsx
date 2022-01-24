@@ -3,11 +3,10 @@ import {CircularProgress, Grid, Typography, useTheme} from "@mui/material";
 
 import React from "react";
 
-import {NotificationType, useNotifications} from "@components/Notifications";
+import {NotificationType} from "@components/Notifications";
 
-import {useAppSelector} from "@redux/hooks";
-
-import {FilesStore, SettingsStore} from "@stores";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
+import {addNotification} from "@redux/reducers/notifications";
 
 import * as path from "path";
 import {Options, PythonShell} from "python-shell";
@@ -17,9 +16,7 @@ import "./play.css";
 // const { app } = require("@electron/remote");
 
 export const Play: React.FC = () => {
-    const store = SettingsStore.useStore();
-    const fileStore = FilesStore.useStore();
-    const notifications = useNotifications();
+    const dispatch = useAppDispatch();
     const [hasError, setHasError] = React.useState<boolean>(false);
     const [loading, setLoading] = React.useState<boolean>(true);
     const interval = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -31,15 +28,10 @@ export const Play: React.FC = () => {
 
     const theme = useTheme();
 
+    const activeFilePath = useAppSelector(state => state.files.activeFile);
+
     const buildWebviz = () => {
-        const args = [
-            "build",
-            path.resolve(
-                fileStore.state.files.find(
-                    file => file.uuid === fileStore.state.activeFileUuid
-                )?.editorModel.uri.path || ""
-            ),
-        ];
+        const args = ["build", path.resolve(activeFilePath)];
         if (webvizTheme !== "") {
             args.push("--theme", webvizTheme as string);
         }
@@ -57,10 +49,12 @@ export const Play: React.FC = () => {
         });
         pythonShell.on("error", error => {
             setHasError(true);
-            notifications.appendNotification({
-                type: NotificationType.ERROR,
-                message: error.message,
-            });
+            dispatch(
+                addNotification({
+                    type: NotificationType.ERROR,
+                    message: error.message,
+                })
+            );
             console.log(error);
         });
         pythonShell.stdout.on("data", data => {

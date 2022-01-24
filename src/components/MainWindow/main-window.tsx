@@ -1,10 +1,7 @@
-import "./main-window.css";
 import {Edit, PlayArrow, Settings} from "@mui/icons-material";
 import {Paper, Tab, Tabs, Tooltip, useTheme} from "@mui/material";
 
 import React from "react";
-
-import path from "path";
 
 import {ColorModeContext} from "@src/App";
 
@@ -18,30 +15,30 @@ import {ThemeSwitch} from "@components/ThemeSwitch";
 import {useAppDispatch, useAppSelector} from "@redux/hooks";
 import {setCurrentPage} from "@redux/reducers/ui";
 
-import {FilesStore} from "@stores";
-
 import {Pages} from "@shared-types/ui";
+
+import path from "path";
+
+import "./main-window.css";
 
 export const MainWindow: React.FC = props => {
     const currentPage = useAppSelector(state => state.ui.currentPage);
     const dispatch = useAppDispatch();
     const theme = useTheme();
     const colorMode = React.useContext(ColorModeContext);
-    const store = FilesStore.useStore();
 
     const mainWindowRef = React.useRef<HTMLDivElement | null>(null);
+    const files = useAppSelector(state => state.files);
 
     React.useEffect(() => {
-        const file = store.state.files.find(
-            el => el.uuid === store.state.activeFileUuid
-        );
-        if (!file || file.editorModel.uri.toString() === "") {
+        if (!files || files.activeFile === "") {
             document.title = "Webviz Config Editor";
             return;
         }
-        const filePath = file.editorModel.uri.path;
-        document.title = `${path.basename(filePath)} - Webviz Config Editor`;
-    }, [store.state.files, store.state.activeFileUuid]);
+        document.title = `${path.basename(
+            files.activeFile
+        )} - Webviz Config Editor`;
+    }, [files]);
 
     return (
         <div

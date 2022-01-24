@@ -219,6 +219,12 @@ export class YamlParser {
         this.parsedString = "";
         this.objects = [];
         this.idObjectsMap = [];
+        this.numberOfLayoutItems = {
+            sections: 0,
+            groups: 0,
+            pages: 0,
+            plugins: 0,
+        };
     }
 
     parse(value: string): void {

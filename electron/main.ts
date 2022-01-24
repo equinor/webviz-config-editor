@@ -10,7 +10,10 @@ import installExtension, {
 import * as ElectronLog from "electron-log";
 import ElectronStore from "electron-store";
 
-import {FileExplorerOptions} from "@shared-types/file-explorer-options";
+import {
+    FileExplorerOptions,
+    FileOptions,
+} from "@shared-types/file-explorer-options";
 
 import moduleAlias from "module-alias";
 import * as path from "path";
@@ -20,6 +23,7 @@ import {
     findPythonInterpreters,
     findWebvizThemes,
     getRecentDocuments,
+    saveFileDialog,
     selectFileDialog,
 } from "./commands";
 import {PROCESS_ENV} from "./env";
@@ -38,16 +42,22 @@ moduleAlias.addAliases({
 const isDev = PROCESS_ENV.NODE_ENV === "development";
 
 const userDataDir = app.getPath("userData");
+const userHomeDir = app.getPath("home");
 
 ipcMain.on("get-app-data", event => {
     event.returnValue = {
         version: app.getVersion(),
         userDataDir,
+        userHomeDir,
     };
 });
 
 ipcMain.handle("select-file", async (event, options: FileExplorerOptions) => {
     return selectFileDialog(event, options);
+});
+
+ipcMain.handle("save-file", async (event, options: FileOptions) => {
+    return saveFileDialog(event, options);
 });
 
 ipcMain.on("get-recent-documents", event => {

@@ -1,7 +1,9 @@
-import { Close } from "@mui/icons-material";
-import { Snackbar, Button, IconButton, Alert, AlertColor } from "@mui/material";
-import { createGenericContext } from "@utils/generic-context";
+import {Close} from "@mui/icons-material";
+import {Alert, AlertColor, Button, IconButton, Snackbar} from "@mui/material";
+
 import React from "react";
+
+import {useAppSelector} from "@redux/hooks";
 
 export enum NotificationType {
     ERROR = 0,
@@ -10,7 +12,7 @@ export enum NotificationType {
     SUCCESS,
 }
 
-const notificationTypeMap: { [key: number]: AlertColor } = {
+const notificationTypeMap: {[key: number]: AlertColor} = {
     [NotificationType.ERROR]: "error",
     [NotificationType.WARNING]: "warning",
     [NotificationType.INFORMATION]: "info",
@@ -28,25 +30,20 @@ export type Notification = {
     action?: NotificationAction;
 };
 
-type Context = {
-    appendNotification: (notification: Notification) => void;
-};
-
-const [useNotificationContext, NotificationContextProvider] = createGenericContext<Context>();
-
-export const NotificationsProvider: React.FC = (props) => {
-    const [notifications, setNotifications] = React.useState<Notification[]>([]);
+export const NotificationsProvider: React.FC = props => {
     const [open, setOpen] = React.useState(false);
-
-    const appendNotification = React.useCallback(
-        (notification: Notification) => {
-            setNotifications([...notifications, notification]);
-            setOpen(true);
-        },
-        [notifications, setNotifications]
+    const notifications = useAppSelector(
+        state => state.notifications.notifications
     );
 
-    const handleClose = (_: Event | React.SyntheticEvent<any, Event>, reason?: string) => {
+    React.useEffect(() => {
+        setOpen(true);
+    }, [notifications]);
+
+    const handleClose = (
+        _: Event | React.SyntheticEvent<any, Event>,
+        reason?: string
+    ) => {
         if (reason === "clickaway") {
             return;
         }
@@ -56,14 +53,23 @@ export const NotificationsProvider: React.FC = (props) => {
 
     const lastNotification = notifications[notifications.length - 1];
     const close = (
-        <IconButton size="small" aria-label="close" color="inherit" onClick={handleClose}>
+        <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleClose}
+        >
             <Close fontSize="small" />
         </IconButton>
     );
     const action =
         lastNotification && lastNotification.action ? (
             <>
-                <Button color="secondary" size="small" onClick={lastNotification.action.action}>
+                <Button
+                    color="secondary"
+                    size="small"
+                    onClick={lastNotification.action.action}
+                >
                     {lastNotification.action.label}
                 </Button>
                 {close}
@@ -73,23 +79,23 @@ export const NotificationsProvider: React.FC = (props) => {
         );
 
     return (
-        <NotificationContextProvider value={{ appendNotification }}>
+        <>
             {props.children}
             {lastNotification && (
                 <Snackbar
                     autoHideDuration={6000}
                     open={open}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    anchorOrigin={{vertical: "bottom", horizontal: "right"}}
                     onClose={handleClose}
                 >
-                    <Alert severity={notificationTypeMap[lastNotification.type]}>
+                    <Alert
+                        severity={notificationTypeMap[lastNotification.type]}
+                    >
                         {lastNotification.message}
                         {action}
                     </Alert>
                 </Snackbar>
             )}
-        </NotificationContextProvider>
+        </>
     );
 };
-
-export const useNotifications = (): Context => useNotificationContext();

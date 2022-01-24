@@ -13,67 +13,53 @@ import {useTheme} from "@mui/material/styles";
 
 import React from "react";
 
-import {Settings} from "@utils/settings";
-
 import {PythonInterpreter} from "@components/Preferences/components/python-interpreter";
 import {WebvizSchema} from "@components/Preferences/components/webviz-schema";
 import {WebvizTheme} from "@components/Preferences/components/webviz-theme";
 
-import {ConfigStore, SettingsStore} from "@stores";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
+import {setInitialConfigurationDone} from "@redux/reducers/uiCoach";
 
-import {SettingMeta} from "@shared-types/settings";
+import WCELogo from "@assets/wce-logo.svg";
 
 import "./get-started-dialog.css";
 
-const getSettingsFlat = (): SettingMeta[] => {
-    let settings: SettingMeta[] = [];
-    Object.keys(Settings).forEach(category => {
-        settings = settings.concat(
-            Settings[category].filter(el => el.needsInitialization)
-        );
-    });
-    return settings;
-};
-
 export const GetStartedDialog: React.FC = () => {
-    const settingsStore = SettingsStore.useStore();
-    const configStore = ConfigStore.useStore();
     const [activeStep, setActiveStep] = React.useState(0);
     const theme = useTheme();
 
+    const isInitialized = useAppSelector(
+        state => state.uiCoach.initialConfigurationDone
+    );
+    const preferences = useAppSelector(state => state.preferences);
+
     const [open, setOpen] = React.useState(false);
+    const dispatch = useAppDispatch();
 
     React.useEffect(() => {
-        const initialized = configStore.state.config.find(
-            el => el.id === "initialized"
-        )?.config;
-        if (!initialized) {
+        if (!isInitialized) {
             setOpen(true);
         }
-    }, []);
+    }, [isInitialized]);
 
     const handleClose = () => {
         setOpen(false);
-        if (activeStep === getSettingsFlat().length + 1) {
-            configStore.dispatch({
-                type: ConfigStore.StoreActions.SetConfig,
-                payload: {
-                    config: {
-                        id: "initialized",
-                        config: true,
-                    },
-                },
-            });
+        if (activeStep === 4) {
+            dispatch(setInitialConfigurationDone(true));
         }
     };
 
     const isCurrentSettingValid = (): boolean => {
-        const settings = getSettingsFlat();
-        const currentSetting = settings[activeStep - 1];
-        return (
-            settingsStore.state.settings.find(el => el.id === currentSetting.id)
-                ?.value !== ""
-        );
+        if (activeStep === 1) {
+            return preferences.pathToPythonInterpreter !== "";
+        }
+        if (activeStep === 2) {
+            return preferences.pathToYamlSchemaFile !== "";
+        }
+        if (activeStep === 3) {
+            return true;
+        }
+        return false;
     };
 
     const handleNext = () => {
@@ -89,7 +75,7 @@ export const GetStartedDialog: React.FC = () => {
             return (
                 <div style={{textAlign: "center"}}>
                     <img
-                        src="./wce-icon.png"
+                        src={WCELogo}
                         alt=""
                         style={{height: 100, marginBottom: 16}}
                     />
@@ -151,6 +137,7 @@ export const GetStartedDialog: React.FC = () => {
                 onClose={handleClose}
                 aria-labelledby="customized-dialog-title"
                 open={open}
+                className="GettingStartedDialog"
             >
                 <DialogTitle sx={{m: 0, p: 2, border: 0}}>
                     <IconButton
@@ -183,17 +170,17 @@ export const GetStartedDialog: React.FC = () => {
                             </Button>
                         </>
                     )}
-                    {activeStep === getSettingsFlat().length + 1 && (
+                    {activeStep === 4 && (
                         <>
                             <Button size="small" onClick={handleClose}>
                                 Perfect
                             </Button>
                         </>
                     )}
-                    {activeStep > 0 && activeStep <= getSettingsFlat().length && (
+                    {activeStep > 0 && activeStep < 4 && (
                         <MobileStepper
                             variant="progress"
-                            steps={getSettingsFlat().length + 2}
+                            steps={5}
                             position="static"
                             activeStep={activeStep}
                             sx={{maxWidth: 400, flexGrow: 1}}

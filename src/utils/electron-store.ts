@@ -1,8 +1,3 @@
-import {UpdateSource} from "@shared-types/files";
-
-import {Selection, SelectionDirection, Uri, editor} from "monaco-editor";
-import path from "path";
-
 const ElectronStore = require("electron-store");
 
 const IPosition = {
@@ -129,12 +124,6 @@ const schema = {
                     },
                 },
             },
-            recentDocuments: {
-                type: "array",
-                items: {
-                    type: "string",
-                },
-            },
         },
     },
 };
@@ -153,38 +142,14 @@ const defaults = {
             "Editor-Issues": [0.7, 0.3],
             "Editor-LivePreview": [0.5, 0.5],
         },
+        recentDocument: [],
     },
     uiCoach: {
         initialConfigurationDone: false,
     },
     files: {
         activeFile: "",
-        files: [
-            {
-                filePath: path.join(__dirname, `Untitled-1.yaml`),
-                editorModel: editor.createModel(
-                    "",
-                    "yaml",
-                    Uri.parse(path.join(__dirname, `Untitled-1.yaml`))
-                ),
-                editorViewState: null,
-                navigationItems: [],
-                yamlObjects: [],
-                updateSource: UpdateSource.Editor,
-                currentPageId: "",
-                unsavedChanges: false,
-                selection: Selection.createWithDirection(
-                    0,
-                    0,
-                    0,
-                    0,
-                    SelectionDirection.LTR
-                ),
-                selectedYamlObject: undefined,
-                title: "",
-            },
-        ],
-        recentDocuments: [],
+        files: [],
     },
 };
 

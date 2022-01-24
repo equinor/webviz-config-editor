@@ -12,6 +12,7 @@ export const MainProcessDataProvider: React.FC = ({children}) => {
     const [data, setData] = React.useState<MainProcessData>({
         version: "unknown",
         userDataDir: "",
+        userHomeDir: "",
     });
 
     React.useEffect(() => {

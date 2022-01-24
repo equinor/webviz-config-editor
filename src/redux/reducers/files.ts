@@ -7,17 +7,15 @@ import initialState from "@redux/initial-state";
 
 import {File, FilesState, UpdateSource} from "@shared-types/files";
 
-import {Selection, SelectionDirection, Uri, editor} from "monaco-editor";
+import {SelectionDirection, editor} from "monaco-editor";
 import path from "path";
 
 const disposeUnusedDefaultModel = (files: File[]) => {
     if (
         files.length === 1 &&
-        files[0].editorModel.uri.path ===
-            Uri.parse(path.join(__dirname, "Untitled-1.yaml")).path &&
-        files[0].editorModel.getValue() === ""
+        files[0].filePath === path.join(__dirname, "Untitled-1.yaml") &&
+        files[0].editorValue === ""
     ) {
-        files[0].editorModel.dispose();
         files.shift();
     }
 };
@@ -48,7 +46,7 @@ export const filesSlice = createSlice({
         ) => {
             // Do not open file when already opened, but make it active
             const openedFile = state.files.find(
-                el => el.editorModel.uri.path === action.payload.filePath
+                el => el.filePath === action.payload.filePath
             );
             if (openedFile) {
                 state.activeFile = action.payload.filePath;
@@ -60,18 +58,15 @@ export const filesSlice = createSlice({
             state.activeFile = action.payload.filePath;
             state.files.push({
                 currentPageId: "",
-                selection: Selection.createWithDirection(
-                    0,
-                    0,
-                    0,
-                    0,
-                    SelectionDirection.LTR
-                ),
-                editorModel: editor.createModel(
-                    action.payload.fileContent,
-                    "yaml",
-                    Uri.parse(action.payload.filePath)
-                ),
+                associatedWithFile: true,
+                selection: {
+                    startLineNumber: 0,
+                    startColumn: 0,
+                    endLineNumber: 0,
+                    endColumn: 0,
+                    direction: SelectionDirection.LTR,
+                },
+                editorValue: action.payload.fileContent,
                 editorViewState: null,
                 unsavedChanges: false,
                 filePath: action.payload.filePath,
@@ -87,24 +82,21 @@ export const filesSlice = createSlice({
                 __dirname,
                 `Untitled-${
                     state.files.filter(file =>
-                        file.editorModel.uri.path.includes("Untitled-")
+                        file.filePath.includes("Untitled-")
                     ).length + 1
                 }.yaml`
             );
             state.files.push({
                 currentPageId: "",
-                selection: Selection.createWithDirection(
-                    0,
-                    0,
-                    0,
-                    0,
-                    SelectionDirection.LTR
-                ),
-                editorModel: editor.createModel(
-                    "",
-                    "yaml",
-                    Uri.parse(filePath)
-                ),
+                associatedWithFile: false,
+                selection: {
+                    startLineNumber: 0,
+                    startColumn: 0,
+                    endLineNumber: 0,
+                    endColumn: 0,
+                    direction: SelectionDirection.LTR,
+                },
+                editorValue: "",
                 editorViewState: null,
                 unsavedChanges: true,
                 filePath,
@@ -124,7 +116,6 @@ export const filesSlice = createSlice({
             );
             let newEditorContent = "";
             if (fileToClose) {
-                window.setTimeout(() => fileToClose.editorModel.dispose(), 100);
                 let newActiveFile = state.activeFile;
                 if (action.payload === state.activeFile) {
                     if (state.files.length >= 2) {
@@ -157,7 +148,7 @@ export const filesSlice = createSlice({
         ) => {
             state.files = state.files.map(f =>
                 f.filePath === action.payload
-                    ? {...f, unsavedChanges: false}
+                    ? {...f, unsavedChanges: false, associatedWithFile: true}
                     : f
             );
         },
@@ -177,21 +168,19 @@ export const filesSlice = createSlice({
                 f => f.filePath === action.payload.oldFilePath
             );
             if (file) {
-                const newEditorModel = editor.createModel(
-                    file.editorModel.getValue(),
-                    "yaml",
-                    Uri.parse(action.payload.newFilePath)
-                );
-                file.editorModel.dispose();
                 state.files = state.files.map(f =>
                     f.filePath === action.payload.oldFilePath
                         ? {
                               ...f,
+                              filePath: action.payload.newFilePath,
+                              associatedWithFile: true,
                               unsavedChanges: false,
-                              editorModel: newEditorModel,
                           }
                         : f
                 );
+                if (action.payload.oldFilePath === state.activeFile) {
+                    state.activeFile = action.payload.newFilePath;
+                }
             }
         },
         setFileObjects: (
@@ -202,7 +191,7 @@ export const filesSlice = createSlice({
                 navigationItems: any;
             }>
         ) => {
-            state.files.map(file =>
+            state.files = state.files.map(file =>
                 file.filePath === state.activeFile
                     ? {
                           ...file,
@@ -221,7 +210,7 @@ export const filesSlice = createSlice({
                 pageId: string;
             }>
         ) => {
-            state.files.map(file =>
+            state.files = state.files.map(file =>
                 file.filePath === state.activeFile
                     ? {
                           ...file,
@@ -237,7 +226,7 @@ export const filesSlice = createSlice({
                 pageId: string;
             }>
         ) => {
-            state.files.map(file =>
+            state.files = state.files.map(file =>
                 file.filePath === state.activeFile
                     ? {
                           ...file,

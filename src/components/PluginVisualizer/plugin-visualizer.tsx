@@ -18,13 +18,12 @@ import {
     ListItemAvatar,
     ListItemText,
     Paper,
-    Switch,
     TextField,
     useTheme,
 } from "@mui/material";
-import ReactTagInput from "@pathofdev/react-tag-input";
 import "@pathofdev/react-tag-input/build/index.css";
 import {usePluginParser} from "@services/plugin-parser";
+import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
 import ReactMarkdown from "react-markdown";
@@ -35,7 +34,7 @@ import {LayoutObject, PluginArgumentObject} from "@utils/yaml-parser";
 
 import {PreviewMode} from "@components/LivePreview/live-preview";
 
-import {FilesStore, SettingsStore} from "@stores";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
 
 import "./plugin-visualizer.css";
 
@@ -46,40 +45,41 @@ export type PluginVisualizerType = {
 
 export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
     const [selected, setSelected] = React.useState<boolean>(false);
-    const store = FilesStore.useStore();
-    const settingsStore = SettingsStore.useStore();
     const theme = useTheme();
     const pluginParserService = usePluginParser();
     const [openStates, setOpenStates] = React.useState<{
         [key: string]: boolean;
     }>({});
 
+    const yamlParser = useYamlParser();
+
+    const dispatch = useAppDispatch();
+    const file = useAppSelector(state =>
+        state.files.files.find(el => el.filePath === state.files.activeFile)
+    );
+
     React.useEffect(() => {
         if (
-            store.state.selectedYamlObject?.startLineNumber ===
+            file?.selectedYamlObject?.startLineNumber ===
                 props.pluginData.startLineNumber &&
-            store.state.selectedYamlObject.endLineNumber ===
+            file?.selectedYamlObject.endLineNumber ===
                 props.pluginData.endLineNumber
         ) {
             setSelected(true);
         } else {
             setSelected(false);
         }
-    }, [store.state.selectedYamlObject, setSelected, props]);
+    }, [file?.selectedYamlObject, setSelected, props]);
 
     const selectPlugin = () => {
-        store.dispatch({
-            type: FilesStore.StoreActions.UpdateSelection,
-            payload: {
-                selection: new monaco.Selection(
-                    props.pluginData.startLineNumber,
-                    0,
-                    props.pluginData.endLineNumber,
-                    0
-                ),
-                source: FilesStore.UpdateSource.Preview,
-            },
-        });
+        yamlParser.updateSelection(
+            new monaco.Selection(
+                props.pluginData.startLineNumber,
+                0,
+                props.pluginData.endLineNumber,
+                0
+            )
+        );
     };
 
     const getIndent = (line: string): string => {
@@ -90,6 +90,7 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
         return line.substring(0, indent);
     };
 
+    /*
     const handleValueChanged = (
         data: LayoutObject,
         argument: PluginArgumentObject | undefined,
@@ -99,7 +100,7 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
         if (!data) {
             return;
         }
-        let contentLines = store.state.currentEditorContent.split("\n");
+        let contentLines = file?.editorModel.getValue().split("\n") || [];
         if (argument) {
             contentLines[argument.startLineNumber - 1] = contentLines[
                 argument.startLineNumber - 1
@@ -126,19 +127,15 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
             };
             (data.children as PluginArgumentObject[]).push(object);
         }
-        store.dispatch({
-            type: FilesStore.StoreActions.UpdateCurrentContentAndSetSelection,
-            payload: {
-                content: contentLines.join("\n"),
-                source: FilesStore.UpdateSource.Plugin,
-                selection: new monaco.Selection(
-                    data.startLineNumber,
-                    0,
-                    data.endLineNumber,
-                    0
-                ),
-            },
-        });
+        if (file) {
+            file.editorModel.setValue(contentLines.join("\n"));
+            yamlParser.parseAndSetSelection(contentLines.join("\n"), new monaco.Selection(
+                data.startLineNumber,
+                0,
+                data.endLineNumber,
+                0
+            ));
+        }
     };
 
     const handleInputFocus = (
@@ -239,6 +236,7 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
                 return <></>;
         }
     };
+    */
 
     const makeView = (
         data: LayoutObject,
@@ -309,10 +307,10 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
             )?.value !== undefined
         ) {
             const isSelected =
-                store.state.selectedYamlObject &&
-                "name" in store.state.selectedYamlObject &&
-                "value" in store.state.selectedYamlObject &&
-                store.state.selectedYamlObject["name"] === key;
+                file?.selectedYamlObject &&
+                "name" in file.selectedYamlObject &&
+                "value" in file.selectedYamlObject &&
+                file.selectedYamlObject["name"] === key;
 
             const argument = (data.children as PluginArgumentObject[]).find(
                 el => el.name === key
@@ -320,33 +318,16 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
             return (
                 <>
                     <ListItem
-                        secondaryAction={
-                            props.mode === PreviewMode.Edit
-                                ? makeInput(
-                                      data,
-                                      argument,
-                                      key,
-                                      value.type,
-                                      plugin.requiredProperties !== undefined &&
-                                          plugin.requiredProperties.includes(
-                                              key
-                                          ),
-                                      argument?.value,
-                                      value["properties"]
-                                  )
-                                : makeView(
-                                      data,
-                                      argument,
-                                      key,
-                                      value.type,
-                                      plugin.requiredProperties !== undefined &&
-                                          plugin.requiredProperties.includes(
-                                              key
-                                          ),
-                                      argument?.value,
-                                      value["properties"]
-                                  )
-                        }
+                        secondaryAction={makeView(
+                            data,
+                            argument,
+                            key,
+                            value.type,
+                            plugin.requiredProperties !== undefined &&
+                                plugin.requiredProperties.includes(key),
+                            argument?.value,
+                            value["properties"]
+                        )}
                         className={isSelected ? "Plugin--selected" : ""}
                     >
                         <ListItemAvatar>
@@ -396,10 +377,10 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
 
     const makeSubArgument = (type: string, key: string, value: any) => {
         const isSelected =
-            store.state.selectedYamlObject &&
-            "name" in store.state.selectedYamlObject &&
-            "value" in store.state.selectedYamlObject &&
-            store.state.selectedYamlObject["name"] === key;
+            file?.selectedYamlObject &&
+            "name" in file.selectedYamlObject &&
+            "value" in file.selectedYamlObject &&
+            file.selectedYamlObject["name"] === key;
         return (
             <ListItem
                 secondaryAction={props.mode === PreviewMode.View && value}

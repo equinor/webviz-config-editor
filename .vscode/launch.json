@@ -21,6 +21,13 @@
             "port": 9223,
             "webRoot": "${workspaceRoot}",
             "timeout": 30000
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Craco",
+            "program": "${workspaceFolder}/node_modules/@craco/craco/bin/craco.js",
+            "args": ["--config", "./some/dir/webpack.config.js"]
         }
     ],
     "compounds": [

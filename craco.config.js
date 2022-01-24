@@ -22,6 +22,7 @@ module.exports = {
 
             if (isEnvDevelopment) {
                 webpackConfig.output.filename = "static/js/[name].bundle.js";
+                /*
                 const workerLoaderOverrideOptions = {
                     test: /\.worker\.(c|m)?[tj]s$/i,
                     use: [
@@ -65,6 +66,7 @@ module.exports = {
                         } added.`
                     );
                 }
+                */
             }
             return webpackConfig;
         },

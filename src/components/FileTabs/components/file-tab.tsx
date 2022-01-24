@@ -31,7 +31,7 @@ export const FileTab: React.FC<FileTabProps> = props => {
         if (!file) {
             return;
         }
-        setFilename(path.basename(file.editorModel.uri.path));
+        setFilename(path.basename(file.filePath));
         setModified(file.unsavedChanges);
     }, [file]);
 

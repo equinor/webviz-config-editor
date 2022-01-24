@@ -2,9 +2,10 @@ import {useEffect, useState} from "react";
 
 import {preprocessJsonSchema} from "@utils/json-schema-preprocessor";
 
-import {NotificationType, useNotifications} from "@components/Notifications";
+import {NotificationType} from "@components/Notifications";
 
-import {useAppSelector} from "@redux/hooks";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
+import {addNotification} from "@redux/reducers/notifications";
 
 import {setDiagnosticsOptions} from "monaco-yaml";
 
@@ -13,7 +14,7 @@ export const useYamlSchema = (yaml: any) => {
     const pathToYamlSchemaFile = useAppSelector(
         state => state.preferences.pathToYamlSchemaFile
     );
-    const notifications = useNotifications();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (yaml && pathToYamlSchemaFile && pathToYamlSchemaFile !== "") {
@@ -21,14 +22,16 @@ export const useYamlSchema = (yaml: any) => {
             try {
                 jsonSchema = preprocessJsonSchema(pathToYamlSchemaFile);
             } catch (e) {
-                notifications.appendNotification({
-                    type: NotificationType.ERROR,
-                    message: "Invalid Webviz YAML schema selected.",
-                    action: {
-                        label: "Change",
-                        action: () => {},
-                    },
-                });
+                dispatch(
+                    addNotification({
+                        type: NotificationType.ERROR,
+                        message: "Invalid Webviz YAML schema selected.",
+                        action: {
+                            label: "Change",
+                            action: () => {},
+                        },
+                    })
+                );
                 return;
             }
 

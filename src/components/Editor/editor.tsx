@@ -24,18 +24,18 @@ import {addNewFile, setActiveFile} from "@redux/reducers/files";
 import {openFile} from "@redux/thunks";
 
 // @ts-ignore
-import {Environment, languages} from "monaco-editor";
-// @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker";
+import {Environment, Uri, languages} from "monaco-editor";
 // @ts-ignore
 import "monaco-yaml/lib/esm/monaco.contribution";
 // @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import YamlWorker from "monaco-yaml/lib/esm/yaml.worker";
-// @ts-ignore
 import * as path from "path";
 import {uuid} from "uuidv4";
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import EditorWorker from "worker-loader!monaco-editor/esm/vs/editor/editor.worker";
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import YamlWorker from "worker-loader!monaco-yaml/lib/esm/yaml.worker";
 
 import "./editor.css";
 
@@ -260,7 +260,7 @@ export const Editor: React.FC<EditorProps> = props => {
             handleCursorSelectionChange
         );
         monacoRef.current.editor.onDidChangeMarkers(handleMarkersChange);
-        editor?.setModel(monaco.editor.createModel("", "yaml"));
+        // editor?.setModel(monaco.editor.createModel("", "yaml"));
     };
 
     React.useEffect(() => {
@@ -276,17 +276,27 @@ export const Editor: React.FC<EditorProps> = props => {
             setNoModels(true);
             return;
         }
-        if (
-            file &&
-            monacoEditorRef.current &&
-            file.editorModel !== monacoEditorRef.current.getModel()
-        ) {
-            monacoEditorRef.current.setModel(file.editorModel);
-            if (file.editorViewState) {
-                monacoEditorRef.current.restoreViewState(file.editorViewState);
+        if (file && monacoEditorRef.current && monacoRef.current) {
+            const currentModel = monacoEditorRef.current.getModel();
+            if (file.filePath !== currentModel?.uri.path) {
+                if (currentModel) {
+                    currentModel.dispose();
+                }
+                monacoEditorRef.current.setModel(
+                    monacoRef.current.editor.createModel(
+                        file.editorValue,
+                        undefined,
+                        Uri.parse(file.filePath)
+                    )
+                );
+                if (file.editorViewState) {
+                    monacoEditorRef.current.restoreViewState(
+                        file.editorViewState
+                    );
+                }
+                monacoEditorRef.current.focus();
+                setNoModels(false);
             }
-            monacoEditorRef.current.focus();
-            setNoModels(false);
         }
     }, [activeFile, files]);
 
@@ -320,7 +330,12 @@ export const Editor: React.FC<EditorProps> = props => {
     return (
         <div
             className="EditorWrapper"
-            style={{backgroundColor: theme.palette.background.default}}
+            style={{
+                backgroundColor:
+                    theme.palette.mode === "dark"
+                        ? "#1E1E1E"
+                        : theme.palette.background.default,
+            }}
         >
             <div
                 className="Editor__NoModels"
@@ -373,7 +388,6 @@ export const Editor: React.FC<EditorProps> = props => {
                 <div
                     className="Issues"
                     style={{
-                        backgroundColor: theme.palette.background.paper,
                         color: theme.palette.text.primary,
                     }}
                 >

@@ -9,6 +9,9 @@ import {
 import * as path from "path";
 
 import {clearRecentDocuments, getRecentDocuments, openFile} from "./commands";
+import {PROCESS_ENV} from "./env";
+
+const isDev = PROCESS_ENV.NODE_ENV === "development";
 
 export const createMenu = () => {
     const isMac = process.platform === "darwin";
@@ -30,7 +33,7 @@ export const createMenu = () => {
         },
     });
 
-    const template = [
+    let template = [
         // { role: 'appMenu' }
         ...(isMac
             ? [
@@ -108,7 +111,10 @@ export const createMenu = () => {
                                     const window =
                                         BrowserWindow.getFocusedWindow();
                                     if (window) {
-                                        window.webContents.send("save-file-as");
+                                        window.webContents.send(
+                                            "save-file-as",
+                                            fileObj.filePath
+                                        );
                                     }
                                 }
                             })
@@ -194,6 +200,23 @@ export const createMenu = () => {
                 },
             ],
         },
+        ...(isDev
+            ? [
+                  {
+                      label: "Debug",
+                      submenu: [
+                          {
+                              label: "Reset Initialization",
+                              click(_: any, browserWindow: BrowserWindow) {
+                                  browserWindow.webContents.send(
+                                      "debug:reset-init"
+                                  );
+                              },
+                          },
+                      ],
+                  },
+              ]
+            : []),
     ];
 
     const menu = Menu.buildFromTemplate(

@@ -23,9 +23,20 @@
 
 .LivePreview__Menu {
     user-select: none;
-    flex-grow: auto;
+    flex-grow: 2;
+    max-width: 300px;
 }
 
 .LivePreview__Page {
+    flex-grow: 4;
+}
+
+.LivePreview__NoContent {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: max-content;
     flex-grow: 4;
 }

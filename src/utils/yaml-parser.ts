@@ -1,8 +1,8 @@
 import {
-    PropertyGroupType,
-    PropertyNavigationType,
-    PropertyPageType,
-    PropertySectionType,
+    GroupType,
+    NavigationType,
+    PageType,
+    SectionType,
 } from "@shared-types/navigation";
 
 import yaml from "yaml";
@@ -704,7 +704,7 @@ export class YamlParser {
     findClosestPage(
         startLineNumber: number,
         endLineNumber: number
-    ): LayoutObject {
+    ): LayoutObject | undefined {
         let objects: (YamlObject | LayoutObject)[] = this.getObjects();
         let lastMatchingObject: LayoutObject | YamlObject = objects[0];
         let breakLoop = false;
@@ -745,7 +745,10 @@ export class YamlParser {
                 break;
             }
         }
-        return lastMatchingObject as LayoutObject;
+        if (lastMatchingObject.type === YamlLayoutObjectType.Page) {
+            return lastMatchingObject as LayoutObject;
+        }
+        return undefined;
     }
 
     getObjectById(id: string): LayoutObject | undefined {
@@ -770,36 +773,34 @@ export class YamlParser {
     private parseNavigationItems(
         items: LayoutObject[],
         currentId: number
-    ): (PropertyGroupType | PropertyPageType | PropertySectionType)[] {
-        const navigationItems: (
-            | PropertyGroupType
-            | PropertyPageType
-            | PropertySectionType
-        )[] = [];
+    ): (GroupType | PageType | SectionType)[] {
+        const navigationItems: (GroupType | PageType | SectionType)[] = [];
         items.forEach(item => {
             if (item.type === YamlLayoutObjectType.Section) {
                 navigationItems.push({
+                    id: item.id,
                     type: "section",
                     title: item.name || "",
                     icon: item.icon,
                     content: this.parseNavigationItems(
                         item.children as LayoutObject[],
                         currentId
-                    ) as (PropertyGroupType | PropertyPageType)[],
+                    ) as (GroupType | PageType)[],
                 });
             } else if (item.type === YamlLayoutObjectType.Group) {
                 navigationItems.push({
+                    id: item.id,
                     type: "group",
                     title: item.name || "",
                     icon: item.icon,
                     content: this.parseNavigationItems(
                         item.children as LayoutObject[],
                         currentId
-                    ) as (PropertyGroupType | PropertyPageType)[],
+                    ) as (GroupType | PageType)[],
                 });
             } else if (item.type === YamlLayoutObjectType.Page) {
-                const id = `page-${currentId++}`;
                 navigationItems.push({
+                    id: item.id,
                     type: "page",
                     title: item.name || "",
                     icon: item.icon,
@@ -810,7 +811,7 @@ export class YamlParser {
         return navigationItems;
     }
 
-    getNavigationItems(): PropertyNavigationType {
+    getNavigationItems(): NavigationType {
         const layout = this.objects.find(
             el => el.type === YamlObjectType.Layout
         );
@@ -819,7 +820,7 @@ export class YamlParser {
             return this.parseNavigationItems(
                 layout.value as LayoutObject[],
                 currentId
-            ) as PropertyNavigationType;
+            ) as NavigationType;
         }
         return [];
     }

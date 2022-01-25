@@ -19,7 +19,9 @@ import {Selection} from "monaco-editor";
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import YamlParserWorker from "worker-loader!@workers/parser.worker";
 
-type Context = {
+const yamlParser = new YamlParserWorker();
+
+export type Context = {
     parse: (value: string) => void;
     parseAndSetSelection: (value: string, selection: Selection) => void;
     updateSelection: (selection: Selection) => void;
@@ -30,12 +32,11 @@ const [useYamlParserServiceContext, YamlParserServiceContextProvider] =
     createGenericContext<Context>();
 
 export const YamlParserService: React.FC = props => {
-    const yamlParser = React.useRef<YamlParserWorker>(new YamlParserWorker());
     const dispatch = useAppDispatch();
 
     const parse = React.useCallback((value: string) => {
-        if (yamlParser.current) {
-            yamlParser.current.postMessage({
+        if (yamlParser) {
+            yamlParser.postMessage({
                 type: YamlParserWorkerRequestType.Parse,
                 text: value,
             });
@@ -44,8 +45,8 @@ export const YamlParserService: React.FC = props => {
 
     const parseAndSetSelection = React.useCallback(
         (value: string, selection: Selection) => {
-            if (yamlParser.current) {
-                yamlParser.current.postMessage({
+            if (yamlParser) {
+                yamlParser.postMessage({
                     type: YamlParserWorkerRequestType.ParseAndSetSelection,
                     text: value,
                     startLineNumber: Math.min(
@@ -63,8 +64,8 @@ export const YamlParserService: React.FC = props => {
     );
 
     const updateSelection = React.useCallback((selection: Selection) => {
-        if (yamlParser.current) {
-            yamlParser.current.postMessage({
+        if (yamlParser) {
+            yamlParser.postMessage({
                 type: YamlParserWorkerRequestType.GetClosestObject,
                 startLineNumber: Math.min(
                     selection.selectionStartLineNumber,
@@ -79,8 +80,8 @@ export const YamlParserService: React.FC = props => {
     }, []);
 
     const setCurrentPage = React.useCallback((pageId: string) => {
-        if (yamlParser.current) {
-            yamlParser.current.postMessage({
+        if (yamlParser) {
+            yamlParser.postMessage({
                 type: YamlParserWorkerRequestType.GetObjectById,
                 id: pageId,
             });
@@ -88,8 +89,8 @@ export const YamlParserService: React.FC = props => {
     }, []);
 
     React.useEffect(() => {
-        if (yamlParser.current) {
-            yamlParser.current.onmessage = (e: MessageEvent) => {
+        if (yamlParser) {
+            yamlParser.onmessage = (e: MessageEvent) => {
                 const data = e.data;
                 switch (data.type) {
                     case YamlParserWorkerResponseType.Parsed:
@@ -106,7 +107,7 @@ export const YamlParserService: React.FC = props => {
                             setFileObjectsAndSelection({
                                 yamlObjects: data.objects,
                                 selectedObject: data.selectedObject,
-                                pageId: data.page?.id || "",
+                                page: data.page,
                             })
                         );
                         break;
@@ -114,7 +115,7 @@ export const YamlParserService: React.FC = props => {
                         dispatch(
                             setSelectedObject({
                                 object: data.object,
-                                pageId: data.page?.id || "",
+                                page: data.page,
                             })
                         );
                         break;
@@ -122,7 +123,10 @@ export const YamlParserService: React.FC = props => {
                         dispatch(
                             setSelectedObject({
                                 object: data.object,
-                                pageId: data.object?.id || "",
+                                page:
+                                    data.object?.type === "PAGE"
+                                        ? data.object
+                                        : undefined,
                             })
                         );
                         break;
@@ -130,12 +134,6 @@ export const YamlParserService: React.FC = props => {
                 }
             };
         }
-        const yamlParserRef = yamlParser.current;
-        return () => {
-            if (yamlParserRef) {
-                yamlParserRef.terminate();
-            }
-        };
     }, [dispatch]);
 
     return (

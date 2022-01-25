@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 
 import {preprocessJsonSchema} from "@utils/json-schema-preprocessor";
 
@@ -10,7 +10,6 @@ import {addNotification} from "@redux/reducers/notifications";
 import {setDiagnosticsOptions} from "monaco-yaml";
 
 export const useYamlSchema = (yaml: any) => {
-    const [loaded, setLoaded] = useState<boolean>(false);
     const pathToYamlSchemaFile = useAppSelector(
         state => state.preferences.pathToYamlSchemaFile
     );
@@ -49,10 +48,7 @@ export const useYamlSchema = (yaml: any) => {
                     },
                 ],
             });
-            setLoaded(true);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathToYamlSchemaFile]);
-
-    return loaded;
 };

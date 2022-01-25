@@ -20,8 +20,15 @@ import {FileTabs} from "@components/FileTabs";
 import {ResizablePanels} from "@components/ResizablePanels";
 
 import {useAppDispatch, useAppSelector} from "@redux/hooks";
-import {addNewFile, setActiveFile} from "@redux/reducers/files";
+import {
+    addNewFile,
+    setActiveFile,
+    setEditorViewState,
+    setValue,
+} from "@redux/reducers/files";
 import {openFile} from "@redux/thunks";
+
+import {CodeEditorViewState} from "@shared-types/files";
 
 // @ts-ignore
 import {Environment, Uri, languages} from "monaco-editor";
@@ -57,6 +64,24 @@ window.MonacoEnvironment = {
                 throw new Error(`Unknown label ${label}`);
         }
     },
+};
+
+const convertFromViewState = (
+    viewState: monaco.editor.ICodeEditorViewState | null
+): CodeEditorViewState | null => {
+    if (!viewState) {
+        return null;
+    }
+    return {
+        ...viewState,
+        viewState: {
+            ...viewState.viewState,
+            firstPosition: {
+                column: viewState.viewState.firstPosition.column,
+                lineNumber: viewState.viewState.firstPosition.lineNumber,
+            },
+        },
+    };
 };
 
 // @ts-ignore
@@ -101,7 +126,7 @@ export const Editor: React.FC<EditorProps> = props => {
     const recentDocuments =
         useAppSelector(state => state.ui.recentDocuments) || [];
 
-    const schemaLoaded = useYamlSchema(yaml);
+    useYamlSchema(yaml);
 
     const fontSizes = [
         0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
@@ -145,6 +170,15 @@ export const Editor: React.FC<EditorProps> = props => {
                     e.position.column
                 )
             );
+            if (monacoEditorRef.current) {
+                dispatch(
+                    setEditorViewState(
+                        convertFromViewState(
+                            monacoEditorRef.current.saveViewState()
+                        )
+                    )
+                );
+            }
         }
     };
 
@@ -165,6 +199,15 @@ export const Editor: React.FC<EditorProps> = props => {
                 return;
             }
             yamlParser.updateSelection(e.selection);
+            if (monacoEditorRef.current) {
+                dispatch(
+                    setEditorViewState(
+                        convertFromViewState(
+                            monacoEditorRef.current.saveViewState()
+                        )
+                    )
+                );
+            }
         }
     };
 
@@ -212,7 +255,9 @@ export const Editor: React.FC<EditorProps> = props => {
             dispatch(
                 setActiveFile({
                     filePath,
-                    viewState: monacoEditorRef.current.saveViewState(),
+                    viewState: convertFromViewState(
+                        monacoEditorRef.current.saveViewState()
+                    ),
                 })
             );
         }
@@ -231,6 +276,7 @@ export const Editor: React.FC<EditorProps> = props => {
                 clearTimeout(parserTimer.current);
             }
             parserTimer.current = setTimeout(() => {
+                dispatch(setValue(model.getValue()));
                 yamlParser.parse(model.getValue());
             }, 200);
         }
@@ -247,6 +293,18 @@ export const Editor: React.FC<EditorProps> = props => {
         );
     };
 
+    const handleEditorViewStateChanged = () => {
+        if (monacoEditorRef.current) {
+            dispatch(
+                setEditorViewState(
+                    convertFromViewState(
+                        monacoEditorRef.current.saveViewState()
+                    )
+                )
+            );
+        }
+    };
+
     const handleEditorDidMount: EditorDidMount = (editor, monacoInstance) => {
         monacoEditorRef.current = editor;
         monacoRef.current = monacoInstance;
@@ -260,7 +318,8 @@ export const Editor: React.FC<EditorProps> = props => {
             handleCursorSelectionChange
         );
         monacoRef.current.editor.onDidChangeMarkers(handleMarkersChange);
-        // editor?.setModel(monaco.editor.createModel("", "yaml"));
+        monacoEditorRef.current.onDidLayoutChange(handleEditorViewStateChanged);
+        monacoEditorRef.current.onDidScrollChange(handleEditorViewStateChanged);
     };
 
     React.useEffect(() => {
@@ -278,7 +337,7 @@ export const Editor: React.FC<EditorProps> = props => {
         }
         if (file && monacoEditorRef.current && monacoRef.current) {
             const currentModel = monacoEditorRef.current.getModel();
-            if (file.filePath !== currentModel?.uri.path) {
+            if (currentModel?.uri.path !== file.filePath) {
                 if (currentModel) {
                     currentModel.dispose();
                 }
@@ -321,6 +380,17 @@ export const Editor: React.FC<EditorProps> = props => {
         }
     };
 
+    React.useEffect(() => {
+        return () => {
+            if (monacoEditorRef.current && monacoRef.current) {
+                monacoRef.current.editor
+                    .getModels()
+                    .forEach(model => model.dispose());
+                monacoEditorRef.current.dispose();
+            }
+        };
+    }, []);
+
     const makeIssueKey = (marker: monaco.editor.IMarker): string => {
         return `${marker.resource.toString()}-${marker.startLineNumber}-${
             marker.endLineNumber
@@ -359,7 +429,11 @@ export const Editor: React.FC<EditorProps> = props => {
                     {recentDocuments.map(doc => (
                         <li key={`recent-document:${doc}`}>
                             <Tooltip title={doc} placement="right">
-                                <Button onClick={() => openFile(doc, dispatch)}>
+                                <Button
+                                    onClick={() =>
+                                        openFile(doc, dispatch, yamlParser)
+                                    }
+                                >
                                     {path.basename(doc)}
                                 </Button>
                             </Tooltip>
@@ -382,7 +456,7 @@ export const Editor: React.FC<EditorProps> = props => {
                             quickSuggestions: {other: true, strings: true},
                         }}
                         width={totalWidth}
-                        height={totalHeight - 40}
+                        height={totalHeight - 56}
                     />
                 </div>
                 <div

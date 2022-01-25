@@ -15,8 +15,11 @@ import {saveFileAs} from "@redux/thunks/save-file";
 import {FileExplorerOptions} from "@shared-types/file-explorer-options";
 import {NotificationType} from "@shared-types/notifications";
 
+import {useYamlParser} from "./yaml-parser";
+
 export const IpcService: React.FC = props => {
     const dispatch = useAppDispatch();
+    const yamlParser = useYamlParser();
     const activeFilePath = useAppSelector(state => state.files.activeFile);
     const associatedWithFile = useAppSelector(
         state =>
@@ -32,7 +35,7 @@ export const IpcService: React.FC = props => {
 
     React.useEffect(() => {
         ipcRenderer.on("file-opened", (event, args) => {
-            openFile(args[0], dispatch);
+            openFile(args[0], dispatch, yamlParser);
         });
         ipcRenderer.on("new-file", (event, args) => {
             dispatch(addNewFile());

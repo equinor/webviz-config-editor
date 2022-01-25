@@ -1,13 +1,19 @@
 import {Draft, PayloadAction, createSlice} from "@reduxjs/toolkit";
 
 import electronStore from "@utils/electron-store";
-import {YamlMetaObject, YamlObject} from "@utils/yaml-parser";
+import {LayoutObject, YamlMetaObject, YamlObject} from "@utils/yaml-parser";
 
 import initialState from "@redux/initial-state";
 
-import {File, FilesState, UpdateSource} from "@shared-types/files";
+import {
+    CodeEditorViewState,
+    File,
+    FilesState,
+    UpdateSource,
+} from "@shared-types/files";
+import {NavigationType} from "@shared-types/navigation";
 
-import {SelectionDirection, editor} from "monaco-editor";
+import {SelectionDirection} from "monaco-editor";
 import path from "path";
 
 const disposeUnusedDefaultModel = (files: File[]) => {
@@ -28,7 +34,7 @@ export const filesSlice = createSlice({
             state: Draft<FilesState>,
             action: PayloadAction<{
                 filePath: string;
-                viewState: editor.ICodeEditorViewState | null;
+                viewState: CodeEditorViewState | null;
             }>
         ) => {
             const currentlyActiveFile = state.files.find(
@@ -39,6 +45,26 @@ export const filesSlice = createSlice({
             }
             state.activeFile = action.payload.filePath;
             electronStore.set("files.activeFile", action.payload);
+        },
+        setValue: (state: Draft<FilesState>, action: PayloadAction<string>) => {
+            state.files = state.files.map(el =>
+                el.filePath === state.activeFile
+                    ? {...el, editorValue: action.payload}
+                    : el
+            );
+        },
+        setEditorViewState: (
+            state: Draft<FilesState>,
+            action: PayloadAction<CodeEditorViewState | null>
+        ) => {
+            state.files = state.files.map(el =>
+                el.filePath === state.activeFile
+                    ? {
+                          ...el,
+                          editorViewState: action.payload,
+                      }
+                    : el
+            );
         },
         addFile: (
             state: Draft<FilesState>,
@@ -57,7 +83,7 @@ export const filesSlice = createSlice({
 
             state.activeFile = action.payload.filePath;
             state.files.push({
-                currentPageId: "",
+                currentPage: undefined,
                 associatedWithFile: true,
                 selection: {
                     startLineNumber: 0,
@@ -87,7 +113,7 @@ export const filesSlice = createSlice({
                 }.yaml`
             );
             state.files.push({
-                currentPageId: "",
+                currentPage: undefined,
                 associatedWithFile: false,
                 selection: {
                     startLineNumber: 0,
@@ -188,7 +214,7 @@ export const filesSlice = createSlice({
             action: PayloadAction<{
                 yamlObjects: YamlObject[];
                 title: string;
-                navigationItems: any;
+                navigationItems: NavigationType;
             }>
         ) => {
             state.files = state.files.map(file =>
@@ -207,7 +233,7 @@ export const filesSlice = createSlice({
             action: PayloadAction<{
                 yamlObjects: YamlObject[];
                 selectedObject: YamlMetaObject;
-                pageId: string;
+                page: LayoutObject;
             }>
         ) => {
             state.files = state.files.map(file =>
@@ -215,6 +241,8 @@ export const filesSlice = createSlice({
                     ? {
                           ...file,
                           yamlObjects: action.payload.yamlObjects,
+                          currentPage: action.payload.page,
+                          selectedYamlObject: action.payload.selectedObject,
                       }
                     : file
             );
@@ -223,7 +251,7 @@ export const filesSlice = createSlice({
             state: Draft<FilesState>,
             action: PayloadAction<{
                 object: YamlMetaObject | undefined;
-                pageId: string;
+                page: LayoutObject;
             }>
         ) => {
             state.files = state.files.map(file =>
@@ -231,7 +259,7 @@ export const filesSlice = createSlice({
                     ? {
                           ...file,
                           selectedYamlObject: action.payload.object,
-                          currentPageId: action.payload.pageId,
+                          currentPage: action.payload.page,
                       }
                     : file
             );
@@ -249,5 +277,7 @@ export const {
     setFileObjects,
     setFileObjectsAndSelection,
     setSelectedObject,
+    setValue,
+    setEditorViewState,
 } = filesSlice.actions;
 export default filesSlice.reducer;

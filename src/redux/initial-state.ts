@@ -49,7 +49,7 @@ const initialFilesState: FilesState = {
             navigationItems: [],
             yamlObjects: [],
             updateSource: UpdateSource.Editor,
-            currentPageId: "",
+            currentPage: undefined,
             unsavedChanges: false,
             selection: {
                 startLineNumber: 0,
@@ -74,7 +74,7 @@ if (initialFilesState.files.length === 0) {
         navigationItems: [],
         yamlObjects: [],
         updateSource: UpdateSource.Editor,
-        currentPageId: "",
+        currentPage: undefined,
         unsavedChanges: true,
         selection: {
             startLineNumber: 0,

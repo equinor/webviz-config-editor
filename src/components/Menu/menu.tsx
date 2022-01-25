@@ -1,8 +1,7 @@
 import {Paper, useTheme} from "@mui/material";
+import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
-
-import {SelectedNavigationItem} from "@components/LivePreview/live-preview";
 
 import {useAppSelector} from "@redux/hooks";
 
@@ -11,10 +10,6 @@ import {
     NavigationItemType,
     NavigationType,
     PageType,
-    PropertyGroupType,
-    PropertyNavigationType,
-    PropertyPageType,
-    PropertySectionType,
     SectionType,
 } from "@shared-types/navigation";
 import {YamlLayoutObjectType} from "../../utils/yaml-parser";
@@ -25,52 +20,7 @@ import {Section} from "./components/Section";
 import "./menu.css";
 
 type MenuProps = {
-    navigationItems: PropertyNavigationType;
-    selectedItem: SelectedNavigationItem | null;
-    setProps: (id: string) => void;
-};
-
-const makeNavigationItemsWithAssignedIds = (
-    navigationItems: PropertyNavigationType
-): NavigationType => {
-    const indices = {
-        section: 0,
-        group: 0,
-        page: 0,
-    };
-    const recursivelyAssignUuids = (
-        item: PropertyPageType | PropertyGroupType | PropertySectionType
-    ): GroupType | PageType | SectionType => {
-        if (item.type === "group") {
-            return {
-                ...item,
-                type: "group",
-                content: (item as PropertyGroupType).content.map(
-                    el => recursivelyAssignUuids(el) as GroupType | PageType
-                ),
-                id: `group-${indices.group++}`,
-            };
-        }
-        if (item.type === "page") {
-            return {
-                ...item,
-                type: "page",
-                id: `page-${indices.page++}`,
-            };
-        }
-        return {
-            ...item,
-            type: "section",
-            content: (item as PropertySectionType).content.map(
-                el => recursivelyAssignUuids(el) as GroupType | PageType
-            ),
-            id: `section-${indices.section++}`,
-        };
-    };
-    return navigationItems.map(
-        (el: PropertySectionType | PropertyGroupType | PropertyPageType) =>
-            recursivelyAssignUuids(el)
-    ) as NavigationType;
+    navigationItems: NavigationType;
 };
 
 const makeNavigation = (
@@ -153,34 +103,46 @@ const makeNavigation = (
     return recursivelyMakeNavigation(navigation);
 };
 
+export type SelectedNavigationItem = {
+    type: Omit<
+        YamlLayoutObjectType,
+        YamlLayoutObjectType.Plugin | YamlLayoutObjectType.PlainText
+    >;
+    number: number;
+};
+
 export const Menu: React.FC<MenuProps> = props => {
-    const [activePageId, setActivePageId] = React.useState<string>("");
     const menuRef = React.useRef<HTMLDivElement | null>(null);
 
-    const [navigationItemsWithAssignedIds, setNavigationsItemsWithAssignedIds] =
-        React.useState<NavigationType>([]);
+    const yamlParser = useYamlParser();
 
-    const currentPageId = useAppSelector(
-        state =>
-            state.files.files.find(el => el.filePath === state.files.activeFile)
-                ?.currentPageId || ""
+    const currentFile = useAppSelector(state =>
+        state.files.files.find(el => el.filePath === state.files.activeFile)
     );
+    const currentPageId = currentFile?.currentPage?.id || "";
+    const selectedYamlObject = currentFile?.selectedYamlObject;
+    let selectedNavigationItem: SelectedNavigationItem | null = null;
 
-    React.useEffect(() => {
-        setNavigationsItemsWithAssignedIds(
-            makeNavigationItemsWithAssignedIds(props.navigationItems)
-        );
-    }, [props.navigationItems]);
-
-    React.useEffect(() => {
-        if (currentPageId !== "") {
-            setActivePageId(currentPageId);
+    if (selectedYamlObject) {
+        if (
+            "type" in selectedYamlObject &&
+            "number" in selectedYamlObject &&
+            (selectedYamlObject["type"] === YamlLayoutObjectType.Section ||
+                selectedYamlObject["type"] === YamlLayoutObjectType.Group ||
+                selectedYamlObject["type"] === YamlLayoutObjectType.Page)
+        ) {
+            selectedNavigationItem = {
+                type: selectedYamlObject["type"],
+                number: selectedYamlObject["number"],
+            };
         }
-    }, [currentPageId]);
+    }
 
-    React.useEffect(() => {
-        props.setProps(activePageId);
-    }, [activePageId]);
+    const handlePageChange = (pageId: string) => {
+        if (pageId !== "") {
+            yamlParser.setCurrentPage(pageId);
+        }
+    };
 
     React.useEffect(() => {
         if (menuRef.current) {
@@ -189,36 +151,38 @@ export const Menu: React.FC<MenuProps> = props => {
             ).forEach((element: Element) => {
                 element.classList.remove("Menu__SelectedItem");
             });
-            if (props.selectedItem) {
-                if (props.selectedItem.type === YamlLayoutObjectType.Section) {
+            if (selectedNavigationItem) {
+                if (
+                    selectedNavigationItem.type === YamlLayoutObjectType.Section
+                ) {
                     const section = menuRef.current.getElementsByClassName(
                         "Menu__Section"
-                    )[props.selectedItem.number] as HTMLElement | undefined;
+                    )[selectedNavigationItem.number] as HTMLElement | undefined;
                     if (section) {
                         section.classList.add("Menu__SelectedItem");
                     }
                 } else if (
-                    props.selectedItem.type === YamlLayoutObjectType.Group
+                    selectedNavigationItem.type === YamlLayoutObjectType.Group
                 ) {
                     const group = menuRef.current.getElementsByClassName(
                         "Menu__Group"
-                    )[props.selectedItem.number] as HTMLElement | undefined;
+                    )[selectedNavigationItem.number] as HTMLElement | undefined;
                     if (group) {
                         group.classList.add("Menu__SelectedItem");
                     }
                 } else if (
-                    props.selectedItem.type === YamlLayoutObjectType.Page
+                    selectedNavigationItem.type === YamlLayoutObjectType.Page
                 ) {
                     const page = menuRef.current.getElementsByClassName(
                         "Menu__Page"
-                    )[props.selectedItem.number] as HTMLElement | undefined;
+                    )[selectedNavigationItem.number] as HTMLElement | undefined;
                     if (page) {
                         page.classList.add("Menu__SelectedItem");
                     }
                 }
             }
         }
-    }, [props.selectedItem]);
+    }, [selectedNavigationItem]);
 
     const theme = useTheme();
 
@@ -226,12 +190,10 @@ export const Menu: React.FC<MenuProps> = props => {
         <Paper elevation={1} className="Menu" ref={menuRef} square>
             {props.navigationItems.length > 0 &&
                 makeNavigation(
-                    navigationItemsWithAssignedIds,
+                    props.navigationItems,
                     false,
-                    activePageId,
-                    url => {
-                        setActivePageId(url);
-                    }
+                    currentPageId,
+                    handlePageChange
                 )}
             {props.navigationItems.length === 0 && (
                 <i>No navigation items...</i>

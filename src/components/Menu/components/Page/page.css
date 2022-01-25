@@ -10,5 +10,6 @@
 
 .Menu__CurrentPage,
 .Menu__CurrentPage:hover {
-    background-color: #dcdcdc;
+    background-color: rgb(0, 0, 0, 0.2);
+    font-weight: bold;
 }

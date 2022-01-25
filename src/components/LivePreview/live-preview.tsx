@@ -8,17 +8,16 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
 
-import {LayoutObject, YamlLayoutObjectType} from "@utils/yaml-parser";
+import {LayoutObject} from "@utils/yaml-parser";
 
 import {PluginVisualizer} from "@components/PluginVisualizer";
 
 import {useAppSelector} from "@redux/hooks";
 
-import {PropertyNavigationType} from "@shared-types/navigation";
+import {NavigationType} from "@shared-types/navigation";
 import {Menu} from "../Menu";
 
 import "./live-preview.css";
@@ -33,28 +32,16 @@ export enum PreviewMode {
     Edit = "EDIT",
     View = "VIEW",
 }
-
-export type SelectedNavigationItem = {
-    type: Omit<
-        YamlLayoutObjectType,
-        YamlLayoutObjectType.Plugin | YamlLayoutObjectType.PlainText
-    >;
-    number: number;
-};
-
 export const LivePreview: React.FC<LivePreviewProps> = props => {
     const [navigationItems, setNavigationItems] =
-        React.useState<PropertyNavigationType>([]);
+        React.useState<NavigationType>([]);
     const [title, setTitle] = React.useState<string>("");
     const [mode, setMode] = React.useState<PreviewMode>(PreviewMode.View);
     const [currentPageContent, setCurrentPageContent] = React.useState<
         LayoutObject[]
     >([]);
-    const [selectedNavigationItem, setSelectedNavigationItem] =
-        React.useState<SelectedNavigationItem | null>(null);
     const theme = useTheme();
 
-    const yamlParser = useYamlParser();
     const file = useAppSelector(state =>
         state.files.files.find(el => el.filePath === state.files.activeFile)
     );
@@ -72,30 +59,10 @@ export const LivePreview: React.FC<LivePreviewProps> = props => {
     }, [file, file?.yamlObjects]);
 
     React.useEffect(() => {
-        const object: LayoutObject | undefined = file?.selectedYamlObject as
-            | LayoutObject
-            | undefined;
-        setCurrentPageContent((object?.children as LayoutObject[]) || []);
-    }, [file?.currentPageId, file?.selectedYamlObject]);
-
-    React.useEffect(() => {
-        if (
-            file?.selectedYamlObject &&
-            "type" in file.selectedYamlObject &&
-            "number" in file.selectedYamlObject &&
-            (file.selectedYamlObject["type"] === YamlLayoutObjectType.Section ||
-                file.selectedYamlObject["type"] ===
-                    YamlLayoutObjectType.Group ||
-                file.selectedYamlObject["type"] === YamlLayoutObjectType.Page)
-        ) {
-            setSelectedNavigationItem({
-                type: file.selectedYamlObject["type"],
-                number: file.selectedYamlObject["number"],
-            });
-        } else {
-            setSelectedNavigationItem(null);
-        }
-    }, [file?.selectedYamlObject]);
+        setCurrentPageContent(
+            (file?.currentPage?.children as LayoutObject[]) || []
+        );
+    }, [file?.currentPage]);
 
     return (
         <div className="LivePreview">
@@ -142,21 +109,28 @@ export const LivePreview: React.FC<LivePreviewProps> = props => {
             </Paper>
             <div className="LivePreview__Content">
                 <div className="LivePreview__Menu">
-                    <Menu
-                        setProps={(id: string) => yamlParser.setCurrentPage(id)}
-                        selectedItem={selectedNavigationItem}
-                        navigationItems={navigationItems}
-                    />
+                    <Menu navigationItems={navigationItems} />
                 </div>
-                <div className="LivePreview__Page">
-                    {currentPageContent.map((plugin: LayoutObject) => (
-                        <PluginVisualizer
-                            key={plugin.id}
-                            pluginData={plugin}
-                            mode={mode}
-                        />
-                    ))}
-                </div>
+                {currentPageContent.length > 0 ? (
+                    <div className="LivePreview__Page">
+                        {currentPageContent.map((plugin: LayoutObject) => (
+                            <PluginVisualizer
+                                key={plugin.id}
+                                pluginData={plugin}
+                                mode={mode}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div
+                        className="LivePreview__NoContent"
+                        style={{color: theme.palette.text.primary}}
+                    >
+                        Please select a page or plugin object to show its
+                        content.
+                    </div>
+                )}
+                {}
             </div>
         </div>
     );

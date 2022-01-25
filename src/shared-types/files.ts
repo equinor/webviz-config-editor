@@ -1,24 +1,49 @@
-import {YamlMetaObject, YamlObject} from "@utils/yaml-parser";
+import {LayoutObject, YamlMetaObject, YamlObject} from "@utils/yaml-parser";
 
-import {PropertyNavigationType} from "@shared-types/navigation";
+import {NavigationType} from "@shared-types/navigation";
 
 import {
     SelectionDirection,
     editor,
 } from "monaco-editor/esm/vs/editor/editor.api";
 
+export type CodeEditorViewState = {
+    cursorState: editor.ICursorState[];
+    viewState: {
+        /** written by previous versions */
+        scrollTop?: number;
+        /** written by previous versions */
+        scrollTopWithoutViewZones?: number;
+        scrollLeft: number;
+        firstPosition: {
+            /**
+             * line number (starts at 1)
+             */
+            readonly lineNumber: number;
+            /**
+             * column (the first character in a line is between column 1 and column 2)
+             */
+            readonly column: number;
+        };
+        firstPositionDeltaTop: number;
+    };
+    contributionsState: {
+        [id: string]: any;
+    };
+};
+
 export type File = {
     filePath: string; // Also used as identifier
     associatedWithFile: boolean;
     editorValue: string;
-    editorViewState: editor.ICodeEditorViewState | null;
+    editorViewState: CodeEditorViewState | null;
     unsavedChanges: boolean;
     selection: Selection;
-    navigationItems: PropertyNavigationType;
+    navigationItems: NavigationType;
     yamlObjects: YamlObject[];
     selectedYamlObject: YamlMetaObject | undefined;
     updateSource: UpdateSource;
-    currentPageId: string;
+    currentPage: LayoutObject | undefined;
     title: string;
 };
 

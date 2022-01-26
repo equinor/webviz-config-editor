@@ -239,13 +239,9 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
     */
 
     const makeView = (
-        data: LayoutObject,
-        argument: PluginArgumentObject | undefined,
         key: string,
         type: string,
-        required: boolean,
-        value?: any,
-        properties?: any
+        value?: any
     ): React.ReactNode => {
         switch (type) {
             case "string":
@@ -253,7 +249,17 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
             case "integer":
                 return value;
             case "array":
-                return JSON.stringify(value);
+                return (
+                    <Button
+                        onClick={() => {
+                            const newOpenStates = openStates;
+                            newOpenStates[key] = !openStates[key];
+                            setOpenStates(newOpenStates);
+                        }}
+                    >
+                        {openStates[key] ? <ExpandLess /> : <ExpandMore />}
+                    </Button>
+                );
             case "list":
                 return JSON.stringify(value);
             case "object":
@@ -319,14 +325,9 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
                 <>
                     <ListItem
                         secondaryAction={makeView(
-                            data,
-                            argument,
                             key,
                             value.type,
-                            plugin.requiredProperties !== undefined &&
-                                plugin.requiredProperties.includes(key),
-                            argument?.value,
-                            value["properties"]
+                            argument?.value
                         )}
                         className={isSelected ? "Plugin--selected" : ""}
                     >
@@ -343,7 +344,7 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
                             secondary="description"
                         />
                     </ListItem>
-                    {value.type === "object" && (
+                    {(value.type === "object" || value.type === "array") && (
                         <Collapse
                             in={openStates[key]}
                             timeout="auto"
@@ -357,15 +358,19 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
                                             makeArgument(data, k, v, plugin)
                                     )}
                                 {props.mode === PreviewMode.View &&
+                                    value.type === "object" &&
                                     argument &&
                                     Object.entries(argument.value).map(
                                         ([k, v]) =>
                                             makeSubArgument(
-                                                v["type"],
                                                 v["name"],
                                                 v["value"]
                                             )
                                     )}
+                                {props.mode === PreviewMode.View &&
+                                    value.type === "array" &&
+                                    argument &&
+                                    makeArray(argument.value as any[])}
                             </List>
                         </Collapse>
                     )}
@@ -375,22 +380,66 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
         return <></>;
     };
 
-    const makeSubArgument = (type: string, key: string, value: any) => {
+    const makeArray = (array: any[]) => {
+        return (
+            <ul>
+                {array.map(el => (
+                    <li>{el}</li>
+                ))}
+            </ul>
+        );
+    };
+
+    const makeSubArgument = (key: string, value: any) => {
         const isSelected =
             file?.selectedYamlObject &&
             "name" in file.selectedYamlObject &&
             "value" in file.selectedYamlObject &&
             file.selectedYamlObject["name"] === key;
+
+        const type =
+            value.constructor === Array
+                ? "array"
+                : value.constructor === Object
+                ? "object"
+                : typeof value;
+
+        let argument;
+        if (type === "object" && "children" in value) {
+            argument = (value.children as PluginArgumentObject[]).find(
+                el => el.name === key
+            );
+        }
         return (
-            <ListItem
-                secondaryAction={props.mode === PreviewMode.View && value}
-                className={isSelected ? "Plugin--selected" : ""}
-            >
-                <ListItemAvatar>
-                    <Avatar>{makeIcon(type, key)}</Avatar>
-                </ListItemAvatar>
-                <ListItemText primary={key} secondary="description" />
-            </ListItem>
+            <>
+                <ListItem
+                    secondaryAction={
+                        props.mode === PreviewMode.View &&
+                        makeView(key, type, value)
+                    }
+                    className={isSelected ? "Plugin--selected" : ""}
+                >
+                    <ListItemAvatar>
+                        <Avatar>{makeIcon(type, key)}</Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={key} secondary="description" />
+                </ListItem>
+                {(type === "object" || type === "array") && (
+                    <Collapse in={openStates[key]} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding sx={{pl: 4}}>
+                            {props.mode === PreviewMode.View &&
+                                type === "object" &&
+                                argument &&
+                                Object.entries(argument.value).map(([k, v]) =>
+                                    makeSubArgument(v["name"], v["value"])
+                                )}
+                            {props.mode === PreviewMode.View &&
+                                type === "array" &&
+                                makeArray(value as any[])}
+                        </List>
+                    </Collapse>
+                )}
+            </>
         );
     };
 

@@ -1,4 +1,4 @@
-import {BrowserWindow, app, dialog, ipcMain} from "electron";
+import {BrowserWindow, app, dialog} from "electron";
 
 import {
     FileExplorerOptions,
@@ -25,8 +25,9 @@ export const openFile = () => {
             ],
         })
         .then((fileObj: Electron.OpenDialogReturnValue) => {
-            if (!fileObj.canceled) {
-                ipcMain.emit("file-opened", fileObj.filePaths);
+            const window = BrowserWindow.getFocusedWindow();
+            if (!fileObj.canceled && window) {
+                window.webContents.send("file-opened", fileObj.filePaths);
                 fileObj.filePaths.forEach((filePath: string) => {
                     addRecentDocument(filePath);
                 });
@@ -258,7 +259,10 @@ export const addRecentDocument = (filePath: string) => {
     );
     fs.appendFileSync(recentDocumentsFile, `${filePath}\n`);
     createMenu();
-    ipcMain.emit("update-recent-documents", files);
+    const window = BrowserWindow.getFocusedWindow();
+    if (window) {
+        window.webContents.send("update-recent-documents", files);
+    }
 };
 
 export const getRecentDocuments = (): string[] => {
@@ -283,5 +287,8 @@ export const clearRecentDocuments = () => {
     );
     fs.writeFileSync(recentDocumentsFile, "");
     createMenu();
-    ipcMain.emit("update-recent-documents", []);
+    const window = BrowserWindow.getFocusedWindow();
+    if (window) {
+        window.webContents.send("update-recent-documents", []);
+    }
 };

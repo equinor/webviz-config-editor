@@ -66,9 +66,11 @@ export const IpcService: React.FC = props => {
             saveFileAs(activeFilePath, arg, currentEditorValue, dispatch);
         });
         ipcRenderer.on("update-recent-documents", (event, arg: string[]) => {
-            setRecentDocuments(arg);
+            dispatch(setRecentDocuments(arg));
         });
-        ipcRenderer.send("get-recent-documents");
+        dispatch(
+            setRecentDocuments(ipcRenderer.sendSync("get-recent-documents"))
+        );
 
         ipcRenderer.on("debug:reset-init", (event, args) => {
             dispatch(setInitialConfigurationDone(false));

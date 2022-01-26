@@ -13,7 +13,7 @@ import React from "react";
 
 import {LayoutObject} from "@utils/yaml-parser";
 
-import {PluginVisualizer} from "@components/PluginVisualizer";
+import {PluginPreview} from "@components/PluginPreview";
 
 import {useAppSelector} from "@redux/hooks";
 
@@ -114,11 +114,7 @@ export const LivePreview: React.FC<LivePreviewProps> = props => {
                 {currentPageContent.length > 0 ? (
                     <div className="LivePreview__Page">
                         {currentPageContent.map((plugin: LayoutObject) => (
-                            <PluginVisualizer
-                                key={plugin.id}
-                                pluginData={plugin}
-                                mode={mode}
-                            />
+                            <PluginPreview key={plugin.id} data={plugin} />
                         ))}
                     </div>
                 ) : (

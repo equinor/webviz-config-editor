@@ -132,6 +132,9 @@ export const filesSlice = createSlice({
                 updateSource: UpdateSource.Editor,
                 title: "",
             });
+            if (state.files.length === 1) {
+                state.activeFile = filePath;
+            }
         },
         closeFile: (
             state: Draft<FilesState>,

@@ -7,7 +7,15 @@ import {
     InsertDriveFile,
     Warning,
 } from "@mui/icons-material";
-import {Badge, Button, Grid, Paper, Tooltip, useTheme} from "@mui/material";
+import {
+    Badge,
+    Button,
+    Grid,
+    Paper,
+    Tooltip,
+    Typography,
+    useTheme,
+} from "@mui/material";
 import useSize from "@react-hook/size";
 import {useYamlParser} from "@services/yaml-parser";
 
@@ -354,9 +362,9 @@ export const Editor: React.FC<EditorProps> = props => {
                     );
                 }
                 monacoEditorRef.current.focus();
-                setNoModels(false);
             }
         }
+        setNoModels(false);
     }, [activeFile, files]);
 
     const handleNewFileClick = () => {
@@ -412,10 +420,11 @@ export const Editor: React.FC<EditorProps> = props => {
                 style={{
                     display: noModels ? "block" : "none",
                     height: totalHeight,
+                    color: theme.palette.mode === "dark" ? "#fff" : "#000",
                 }}
             >
-                <h2>Webviz Config Editor</h2>
-                <h3>Start</h3>
+                <Typography variant="h5">Webviz Config Editor</Typography>
+                <Typography variant="h6">Start</Typography>
                 <Button onClick={() => handleNewFileClick()}>
                     <InsertDriveFile style={{marginRight: 8}} /> New File
                 </Button>
@@ -423,26 +432,29 @@ export const Editor: React.FC<EditorProps> = props => {
                 <Button onClick={() => ipcRenderer.send("FILE_OPEN")}>
                     <FolderOpen style={{marginRight: 8}} /> Open File
                 </Button>
-                <br />
-                <h3>Recent</h3>
-                <ul>
-                    {recentDocuments.map(doc => (
-                        <li key={`recent-document:${doc}`}>
-                            <Tooltip title={doc} placement="right">
-                                <Button
-                                    onClick={() =>
-                                        openFile(doc, dispatch, yamlParser)
-                                    }
-                                >
-                                    {path.basename(doc)}
-                                </Button>
-                            </Tooltip>
-                        </li>
-                    ))}
-                </ul>
+                <Typography variant="h6">Recent</Typography>
+                {recentDocuments.map(doc => (
+                    <li key={`recent-document:${doc}`}>
+                        <Tooltip title={doc} placement="right">
+                            <Button
+                                onClick={() =>
+                                    openFile(doc, dispatch, yamlParser)
+                                }
+                            >
+                                {path.basename(doc)}
+                            </Button>
+                        </Tooltip>
+                    </li>
+                ))}
             </div>
             <ResizablePanels direction="vertical" id="Editor-Issues">
-                <div className="Editor" ref={editorRef}>
+                <div
+                    className="Editor"
+                    ref={editorRef}
+                    style={{
+                        visibility: noModels ? "hidden" : "visible",
+                    }}
+                >
                     <FileTabs onFileChange={handleFileChange} />
                     <MonacoEditor
                         language="yaml"
@@ -479,7 +491,7 @@ export const Editor: React.FC<EditorProps> = props => {
                         >
                             <Grid item>
                                 <Badge
-                                    badgeContent={markers.length}
+                                    badgeContent={noModels ? 0 : markers.length}
                                     color="warning"
                                 >
                                     <ErrorIcon color="action" />
@@ -488,7 +500,10 @@ export const Editor: React.FC<EditorProps> = props => {
                             <Grid item>Issues</Grid>
                         </Grid>
                     </Paper>
-                    <div className="IssuesContent">
+                    <div
+                        className="IssuesContent"
+                        style={{display: noModels ? "none" : "block"}}
+                    >
                         {markers.map(marker => (
                             <div
                                 className="Issue"

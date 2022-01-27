@@ -50,7 +50,7 @@ export const StringView: React.FC<ComponentsProps> = props => {
             <ListItemAvatar>
                 <Abc />
             </ListItemAvatar>
-            <ListItemText primary={props.name} secondary="description" />
+            <ListItemText primary={props.name} secondary="" />
         </ListItem>
     );
 };

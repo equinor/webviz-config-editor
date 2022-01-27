@@ -565,7 +565,11 @@ export class YamlParser {
         const optionObjects: PluginArgumentObject[] = [];
         options.forEach((option: BlockMapItem) => {
             if (option.key && option.value && option.key.type === "scalar") {
-                if (option.value.type === "scalar") {
+                if (
+                    option.value.type === "scalar" ||
+                    option.value.type === "single-quoted-scalar" ||
+                    option.value.type === "double-quoted-scalar"
+                ) {
                     optionObjects.push({
                         id: this.makeId(option.key.indent),
                         name: option.key.source,
@@ -577,7 +581,10 @@ export class YamlParser {
                     const valueList = option.value.items
                         .filter(
                             (el: BlockSequenceItem) =>
-                                el.value && el.value.type === "scalar"
+                                el.value &&
+                                (el.value.type === "scalar" ||
+                                    el.value.type === "single-quoted-scalar" ||
+                                    el.value.type === "double-quoted-scalar")
                         )
                         .map(el => (el.value as yaml.CST.FlowScalar).source);
                     optionObjects.push({

@@ -1,5 +1,5 @@
 import "../plugin-preview.css";
-import {DataObject} from "@mui/icons-material";
+import {DataArray} from "@mui/icons-material";
 import {List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import {useYamlParser} from "@services/yaml-parser";
 
@@ -10,22 +10,16 @@ import {PluginArgumentObject} from "@utils/yaml-parser";
 
 import {useAppSelector} from "@redux/hooks";
 
-import {isNumber} from "lodash";
-
-import {BooleanView} from "./boolean-view";
-import {IntegerView} from "./integer-view";
-import {StringView} from "./string-view";
-
-export type ObjectPluginArgumentObject = Omit<PluginArgumentObject, "value"> & {
-    value: PluginArgumentObject[];
+export type ArrayPluginArgumentObject = Omit<PluginArgumentObject, "value"> & {
+    value: any[];
 };
 
 type ComponentsProps = {
     name: string;
-    value: ObjectPluginArgumentObject;
+    value: ArrayPluginArgumentObject;
 };
 
-export const ObjectView: React.FC<ComponentsProps> = props => {
+export const ArrayView: React.FC<ComponentsProps> = props => {
     const yamlParser = useYamlParser();
 
     const file = useAppSelector(state =>
@@ -58,33 +52,17 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                 className={isSelected ? "Plugin--selected" : ""}
             >
                 <ListItemAvatar>
-                    <DataObject />
+                    <DataArray />
                 </ListItemAvatar>
                 <ListItemText primary={props.name} secondary="description" />
             </ListItem>
             <List component="div" disablePadding sx={{pl: 4}}>
                 {props.value.value.map(el => {
-                    if (el.value.constructor === Object) {
-                        return (
-                            <ObjectView
-                                name={el.name}
-                                value={el as ObjectPluginArgumentObject}
-                            />
-                        );
-                    }
-                    if (el.value.constructor === Array) {
-                        return <></>;
-                    }
-                    if (el.value.constructor === Boolean) {
-                        return <BooleanView name={el.name} value={el} />;
-                    }
-                    if (el.value.constructor === String) {
-                        return <StringView name={el.name} value={el} />;
-                    }
-                    if (isNumber(el.value)) {
-                        return <IntegerView name={el.name} value={el} />;
-                    }
-                    return <></>;
+                    return (
+                        <ListItem>
+                            <ListItemText primary={JSON.stringify(el)} />
+                        </ListItem>
+                    );
                 })}
             </List>
         </>

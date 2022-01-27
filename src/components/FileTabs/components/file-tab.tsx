@@ -3,6 +3,8 @@ import {useTheme} from "@mui/material";
 
 import React from "react";
 
+import {generateHashCode} from "@utils/hash";
+
 import {useAppDispatch, useAppSelector} from "@redux/hooks";
 import {closeFile} from "@redux/reducers/files";
 
@@ -32,7 +34,10 @@ export const FileTab: React.FC<FileTabProps> = props => {
             return;
         }
         setFilename(path.basename(file.filePath));
-        setModified(file.unsavedChanges);
+        setModified(
+            generateHashCode(file.editorValue) !== file.hash ||
+                !file.associatedWithFile
+        );
     }, [file]);
 
     React.useEffect(() => {

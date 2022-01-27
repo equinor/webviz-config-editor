@@ -10,6 +10,7 @@ import {LayoutObject, PluginArgumentObject} from "@utils/yaml-parser";
 
 import {useAppSelector} from "@redux/hooks";
 
+import {ArrayPluginArgumentObject, ArrayView} from "./components/array-view";
 import {IntegerView} from "./components/integer-view";
 import {ObjectPluginArgumentObject, ObjectView} from "./components/object-view";
 import {StringView} from "./components/string-view";
@@ -109,6 +110,16 @@ export const PluginPreview: React.FC<PluginPreviewProps> = props => {
                                           name={key}
                                           value={
                                               data as ObjectPluginArgumentObject
+                                          }
+                                      />
+                                  );
+                              case "array":
+                                  return (
+                                      <ArrayView
+                                          key={key}
+                                          name={key}
+                                          value={
+                                              data as ArrayPluginArgumentObject
                                           }
                                       />
                                   );

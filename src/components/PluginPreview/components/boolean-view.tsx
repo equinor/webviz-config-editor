@@ -50,7 +50,7 @@ export const BooleanView: React.FC<ComponentsProps> = props => {
             <ListItemAvatar>
                 <ToggleOn />
             </ListItemAvatar>
-            <ListItemText primary={props.name} secondary="description" />
+            <ListItemText primary={props.name} secondary="" />
         </ListItem>
     );
 };

@@ -65,7 +65,7 @@ ipcMain.on("get-recent-documents", event => {
 });
 
 ipcMain.on("find-python-interpreters", event => {
-    event.reply("python-interpreters", findPythonInterpreters());
+    findPythonInterpreters(event);
 });
 
 ipcMain.on("check-if-python-interpreter", (event, pythonPath) => {

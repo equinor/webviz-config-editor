@@ -235,7 +235,7 @@ export const Editor: React.FC<EditorProps> = props => {
     );
 
     React.useEffect(() => {
-        if (monacoEditorRef.current && selection && selectedYamlObject) {
+        if (monacoEditorRef.current && selectedYamlObject) {
             updateLineDecorations([
                 {
                     range: new monaco.Range(
@@ -248,9 +248,14 @@ export const Editor: React.FC<EditorProps> = props => {
                         isWholeLine: true,
                         linesDecorationsClassName:
                             "Editor__CurrentObjectDecoration",
+                        overviewRuler: {
+                            color: "rgb(255, 208, 54)",
+                            position: monaco.editor.OverviewRulerLane.Left,
+                        },
                     },
                 },
             ]);
+
             monacoEditorRef.current.revealLinesInCenterIfOutsideViewport(
                 selectedYamlObject.startLineNumber,
                 selectedYamlObject.endLineNumber
@@ -381,10 +386,12 @@ export const Editor: React.FC<EditorProps> = props => {
                     marker.endColumn
                 )
             );
+            /*
             monacoEditorRef.current.revealLinesInCenterIfOutsideViewport(
                 marker.startLineNumber,
                 marker.endLineNumber
             );
+            */
         }
     };
 

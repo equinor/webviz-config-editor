@@ -37,7 +37,7 @@ export type File = {
     associatedWithFile: boolean;
     editorValue: string;
     editorViewState: CodeEditorViewState | null;
-    unsavedChanges: boolean;
+    hash: number;
     selection: Selection;
     navigationItems: NavigationType;
     yamlObjects: YamlObject[];

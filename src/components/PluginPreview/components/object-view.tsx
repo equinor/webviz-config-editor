@@ -12,6 +12,7 @@ import {useAppSelector} from "@redux/hooks";
 
 import {isNumber} from "lodash";
 
+import {ArrayPluginArgumentObject, ArrayView} from "./array-view";
 import {BooleanView} from "./boolean-view";
 import {IntegerView} from "./integer-view";
 import {StringView} from "./string-view";
@@ -60,7 +61,7 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                 <ListItemAvatar>
                     <DataObject />
                 </ListItemAvatar>
-                <ListItemText primary={props.name} secondary="description" />
+                <ListItemText primary={props.name} secondary="" />
             </ListItem>
             <List component="div" disablePadding sx={{pl: 4}}>
                 {props.value.value.map(el => {
@@ -73,7 +74,23 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                         );
                     }
                     if (el.value.constructor === Array) {
-                        return <></>;
+                        if (
+                            el.value.length > 0 &&
+                            el.value[0].constructor === Object
+                        ) {
+                            return (
+                                <ObjectView
+                                    name={el.name}
+                                    value={el as ObjectPluginArgumentObject}
+                                />
+                            );
+                        }
+                        return (
+                            <ArrayView
+                                name={el.name}
+                                value={el as ArrayPluginArgumentObject}
+                            />
+                        );
                     }
                     if (el.value.constructor === Boolean) {
                         return <BooleanView name={el.name} value={el} />;

@@ -1,4 +1,4 @@
-import {Paper, useTheme} from "@mui/material";
+import {useTheme} from "@mui/material";
 import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
@@ -114,6 +114,7 @@ export type SelectedNavigationItem = {
 export const Menu: React.FC<MenuProps> = props => {
     const menuRef = React.useRef<HTMLDivElement | null>(null);
 
+    const theme = useTheme();
     const yamlParser = useYamlParser();
 
     const currentFile = useAppSelector(state =>
@@ -184,10 +185,12 @@ export const Menu: React.FC<MenuProps> = props => {
         }
     }, [selectedNavigationItem]);
 
-    const theme = useTheme();
-
     return (
-        <Paper elevation={1} className="Menu" ref={menuRef} square>
+        <div
+            style={{color: theme.palette.text.primary}}
+            ref={menuRef}
+            className="Menu"
+        >
             {props.navigationItems.length > 0 &&
                 makeNavigation(
                     props.navigationItems,
@@ -198,6 +201,6 @@ export const Menu: React.FC<MenuProps> = props => {
             {props.navigationItems.length === 0 && (
                 <i>No navigation items...</i>
             )}
-        </Paper>
+        </div>
     );
 };

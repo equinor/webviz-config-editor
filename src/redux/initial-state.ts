@@ -1,5 +1,6 @@
 import electronStore from "@utils/electron-store";
 import {getFileContent} from "@utils/file-operations";
+import {generateHashCode} from "@utils/hash";
 
 import {File, FilesState, UpdateSource} from "@shared-types/files";
 import {NotificationsState} from "@shared-types/notifications";
@@ -40,17 +41,18 @@ const initialUiCoachState: UiCoachState = {
 
 const initialFilesState: FilesState = {
     activeFile: electronStore.get("files.activeFile"),
-    files: electronStore.get("files.files").map(
-        (file: any): File => ({
+    files: electronStore.get("files.files").map((file: any): File => {
+        const fileContent = getFileContent(file.filePath);
+        return {
             filePath: file.filePath,
             associatedWithFile: fs.existsSync(file.filePath),
-            editorValue: getFileContent(file.filePath),
+            editorValue: fileContent,
             editorViewState: file.editorViewState,
             navigationItems: [],
             yamlObjects: [],
             updateSource: UpdateSource.Editor,
             currentPage: undefined,
-            unsavedChanges: false,
+            hash: generateHashCode(fileContent),
             selection: {
                 startLineNumber: 0,
                 startColumn: 0,
@@ -60,8 +62,8 @@ const initialFilesState: FilesState = {
             },
             selectedYamlObject: undefined,
             title: "",
-        })
-    ),
+        };
+    }),
 };
 
 if (initialFilesState.files.length === 0) {
@@ -75,7 +77,7 @@ if (initialFilesState.files.length === 0) {
         yamlObjects: [],
         updateSource: UpdateSource.Editor,
         currentPage: undefined,
-        unsavedChanges: true,
+        hash: generateHashCode(""),
         selection: {
             startLineNumber: 0,
             startColumn: 0,

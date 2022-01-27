@@ -78,10 +78,7 @@ export const checkIfPythonInterpreter = (pythonInterpreter: string) => {
     };
 };
 
-export const findPythonInterpreters = (): {
-    options: string[];
-    success: boolean;
-} => {
+export const findPythonInterpreters = (event: Electron.IpcMainInvokeEvent) => {
     let options: string[] = [];
     let success = true;
     try {
@@ -93,34 +90,62 @@ export const findPythonInterpreters = (): {
                 resolvedPaths: string | readonly string[] | undefined
             ) => {
                 if (err) {
-                    which.default(
-                        "python3",
-                        {all: true},
-                        (
-                            error: Error | null,
-                            resolvedPaths2:
-                                | string
-                                | readonly string[]
-                                | undefined
-                        ) => {
-                            if (error) {
-                                options = [];
-                                success = false;
-                            } else if (resolvedPaths2 === undefined) {
-                                options = [];
-                            } else if (resolvedPaths2.constructor === Array) {
-                                options = resolvedPaths2;
-                            } else if (resolvedPaths2.constructor === String) {
-                                options = [resolvedPaths2 as string];
+                    try {
+                        which.default(
+                            "python3",
+                            {all: true},
+                            (
+                                error: Error | null,
+                                resolvedPaths2:
+                                    | string
+                                    | readonly string[]
+                                    | undefined
+                            ) => {
+                                if (error) {
+                                    options = [];
+                                    success = false;
+                                } else if (resolvedPaths2 === undefined) {
+                                    options = [];
+                                } else if (
+                                    resolvedPaths2.constructor === Array
+                                ) {
+                                    options = resolvedPaths2;
+                                } else if (
+                                    resolvedPaths2.constructor === String
+                                ) {
+                                    options = [resolvedPaths2 as string];
+                                }
+                                event.sender.send("python-interpreters", {
+                                    options,
+                                    success,
+                                });
                             }
-                        }
-                    );
+                        );
+                    } catch (e) {
+                        success = false;
+                        event.sender.send("python-interpreters", {
+                            options: [],
+                            success: false,
+                        });
+                    }
                 } else if (resolvedPaths === undefined) {
                     options = [];
+                    event.sender.send("python-interpreters", {
+                        options,
+                        success,
+                    });
                 } else if (resolvedPaths.constructor === Array) {
                     options = resolvedPaths;
+                    event.sender.send("python-interpreters", {
+                        options,
+                        success,
+                    });
                 } else if (resolvedPaths.constructor === String) {
                     options = [resolvedPaths as string];
+                    event.sender.send("python-interpreters", {
+                        options,
+                        success,
+                    });
                 }
             }
         );
@@ -143,17 +168,17 @@ export const findPythonInterpreters = (): {
                     } else if (resolvedPaths.constructor === String) {
                         options = [resolvedPaths as string];
                     }
+                    event.sender.send("python-interpreters", {
+                        options,
+                        success,
+                    });
                 }
             );
         } catch (error) {
             success = false;
+            event.sender.send("python-interpreters", {options, success});
         }
     }
-
-    return {
-        options,
-        success,
-    };
 };
 
 export const findWebvizThemes = (

@@ -1,6 +1,7 @@
 import {Draft, PayloadAction, createSlice} from "@reduxjs/toolkit";
 
 import electronStore from "@utils/electron-store";
+import {generateHashCode} from "@utils/hash";
 import {LayoutObject, YamlMetaObject, YamlObject} from "@utils/yaml-parser";
 
 import initialState from "@redux/initial-state";
@@ -49,7 +50,7 @@ export const filesSlice = createSlice({
         setValue: (state: Draft<FilesState>, action: PayloadAction<string>) => {
             state.files = state.files.map(el =>
                 el.filePath === state.activeFile
-                    ? {...el, editorValue: action.payload}
+                    ? {...el, editorValue: action.payload, unsavedChanges: true}
                     : el
             );
         },
@@ -94,7 +95,7 @@ export const filesSlice = createSlice({
                 },
                 editorValue: action.payload.fileContent,
                 editorViewState: null,
-                unsavedChanges: false,
+                hash: generateHashCode(action.payload.fileContent),
                 filePath: action.payload.filePath,
                 navigationItems: [],
                 yamlObjects: [],
@@ -124,7 +125,7 @@ export const filesSlice = createSlice({
                 },
                 editorValue: "",
                 editorViewState: null,
-                unsavedChanges: true,
+                hash: generateHashCode(""),
                 filePath,
                 navigationItems: [],
                 yamlObjects: [],
@@ -177,16 +178,12 @@ export const filesSlice = createSlice({
         ) => {
             state.files = state.files.map(f =>
                 f.filePath === action.payload
-                    ? {...f, unsavedChanges: false, associatedWithFile: true}
+                    ? {
+                          ...f,
+                          hash: generateHashCode(f.editorValue),
+                          associatedWithFile: true,
+                      }
                     : f
-            );
-        },
-        markAsUnsaved: (
-            state: Draft<FilesState>,
-            action: PayloadAction<string>
-        ) => {
-            state.files = state.files.map(f =>
-                f.filePath === action.payload ? {...f, unsavedChanges: true} : f
             );
         },
         changeFilePath: (

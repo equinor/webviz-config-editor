@@ -50,7 +50,7 @@ export const IntegerView: React.FC<ComponentsProps> = props => {
             <ListItemAvatar>
                 <Numbers />
             </ListItemAvatar>
-            <ListItemText primary={props.name} secondary="description" />
+            <ListItemText primary={props.name} secondary="" />
         </ListItem>
     );
 };

@@ -27,3 +27,11 @@
     outline-width: 2px;
     outline-color: rgb(255, 208, 54);
 }
+
+.Plugin li:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.Plugin div li:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.1);
+}

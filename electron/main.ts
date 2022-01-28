@@ -22,7 +22,6 @@ import {
     checkIfPythonInterpreter,
     findPythonInterpreters,
     findWebvizThemes,
-    getRecentDocuments,
     saveFileDialog,
     selectFileDialog,
 } from "./commands";
@@ -58,10 +57,6 @@ ipcMain.handle("select-file", async (event, options: FileExplorerOptions) => {
 
 ipcMain.handle("save-file", async (event, options: FileOptions) => {
     return saveFileDialog(event, options);
-});
-
-ipcMain.on("get-recent-documents", event => {
-    event.returnValue = getRecentDocuments();
 });
 
 ipcMain.on("find-python-interpreters", event => {

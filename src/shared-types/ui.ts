@@ -20,5 +20,4 @@ export type UiState = {
         theme: Themes;
     };
     paneConfiguration: PaneConfiguration[];
-    recentDocuments: string[];
 };

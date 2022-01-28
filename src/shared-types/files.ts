@@ -64,4 +64,5 @@ export type Selection = {
 export type FilesState = {
     files: File[];
     activeFile: string;
+    recentFiles: string[];
 };

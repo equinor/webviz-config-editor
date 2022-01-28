@@ -8,15 +8,16 @@ import {
 
 import * as path from "path";
 
-import {clearRecentDocuments, getRecentDocuments, openFile} from "./commands";
+import {openFile} from "./commands";
 import {PROCESS_ENV} from "./env";
+import {RecentFiles, RecentFilesManager} from "./recent-files";
 
 const isDev = PROCESS_ENV.NODE_ENV === "development";
 
 export const createMenu = () => {
     const isMac = process.platform === "darwin";
 
-    const listOfRecentDocuments = getRecentDocuments();
+    const listOfRecentDocuments = RecentFiles.getRecentFiles();
     const recentDocuments = listOfRecentDocuments.map(doc => ({
         label: path.basename(doc),
         click() {
@@ -29,7 +30,7 @@ export const createMenu = () => {
     recentDocuments.push({
         label: "Clear Recent",
         click() {
-            clearRecentDocuments();
+            RecentFilesManager.clearRecentFiles();
         },
     });
 

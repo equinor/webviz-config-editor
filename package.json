@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "author": "Equinor <noreply@equinor.com>",
     "description": "An open-source editor for creating Webviz dashboards.",
+    "license": "MIT",
     "homepage": "./",
     "main": "build/electron/main.js",
     "contributors": [
@@ -13,7 +14,6 @@
         "type": "git",
         "url": "git://github.com/equinor/webviz-core-components.git"
     },
-    "private": true,
     "devDependencies": {
         "@commitlint/cli": "13.1.0",
         "@commitlint/config-conventional": "13.1.0",
@@ -224,7 +224,7 @@
             "packageCategory": "Kubeshop",
             "priority": "standard"
         },
-        "asar": false,
+        "asar": true,
         "extends": null,
         "files": [
             "build/**/*",

@@ -8,9 +8,6 @@ import {useAppDispatch, useAppSelector} from "@redux/hooks";
 import {setPathToYamlSchemaFile} from "@redux/reducers/preferences";
 
 import {FileExplorerOptions} from "@shared-types/file-explorer-options";
-import {FileFilter} from "@shared-types/settings";
-
-import * as path from "path";
 
 import "./preference-item.css";
 
@@ -55,10 +52,15 @@ export const WebvizSchema: React.FC = props => {
         setLocalValue(value);
     };
 
-    const openFileDialog = (filter: FileFilter[], defaultPath: string) => {
+    const openFileDialog = () => {
         const opts: FileExplorerOptions = {
-            filter,
-            defaultPath,
+            filters: [
+                {
+                    name: "Webviz JSON Schema File",
+                    extensions: ["json"],
+                },
+            ],
+            defaultPath: localValue,
         };
         ipcRenderer.invoke("select-file", opts).then(files => {
             if (files) {
@@ -94,19 +96,7 @@ export const WebvizSchema: React.FC = props => {
                                 value={localValue}
                                 size="small"
                             />
-                            <Button
-                                onClick={() =>
-                                    openFileDialog(
-                                        [
-                                            {
-                                                name: "Webviz JSON Schema File",
-                                                extensions: ["json"],
-                                            },
-                                        ],
-                                        path.dirname(localValue as string)
-                                    )
-                                }
-                            >
+                            <Button onClick={() => openFileDialog()}>
                                 Select
                             </Button>
                         </>

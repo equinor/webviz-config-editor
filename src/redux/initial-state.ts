@@ -1,3 +1,5 @@
+import {ipcRenderer} from "electron";
+
 import electronStore from "@utils/electron-store";
 import {getFileContent} from "@utils/file-operations";
 import {generateHashCode} from "@utils/hash";
@@ -23,7 +25,6 @@ const initialUiState: UiState = {
         name: key,
         sizes: paneConfiguration[key],
     })),
-    recentDocuments: electronStore.get("ui.recentDocuments"),
 };
 
 const initialPreferencesState: PreferencesState = {
@@ -41,6 +42,7 @@ const initialUiCoachState: UiCoachState = {
 
 const initialFilesState: FilesState = {
     activeFile: electronStore.get("files.activeFile"),
+    recentFiles: electronStore.get("files.recentFiles") || [],
     files: electronStore.get("files.files").map((file: any): File => {
         const fileContent = getFileContent(file.filePath);
         return {
@@ -65,6 +67,11 @@ const initialFilesState: FilesState = {
         };
     }),
 };
+
+ipcRenderer.send(
+    "set-recent-files",
+    electronStore.get("files.recentFiles") || []
+);
 
 if (initialFilesState.files.length === 0) {
     initialFilesState.activeFile = path.join(__dirname, `Untitled-1.yaml`);

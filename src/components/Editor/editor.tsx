@@ -36,6 +36,7 @@ import {
 } from "@redux/reducers/files";
 import {openFile} from "@redux/thunks";
 
+import {FileExplorerOptions} from "@shared-types/file-explorer-options";
 import {CodeEditorViewState} from "@shared-types/files";
 
 // @ts-ignore
@@ -62,7 +63,6 @@ declare global {
 
 window.MonacoEnvironment = {
     getWorker(moduleId, label) {
-        console.log(`Current language: ${label}`);
         switch (label) {
             case "editorWorkerService":
                 return new EditorWorker();
@@ -98,7 +98,6 @@ const {yaml} = languages || {};
 type EditorProps = {};
 
 export const Editor: React.FC<EditorProps> = props => {
-    const [code, setCode] = React.useState<string>("");
     const [fontSize, setFontSize] = React.useState<number>(1);
     const [noModels, setNoModels] = React.useState<boolean>(false);
     const [selection, setSelection] = React.useState<monaco.ISelection | null>(
@@ -131,8 +130,7 @@ export const Editor: React.FC<EditorProps> = props => {
     );
     const files = useAppSelector(state => state.files.files);
     const activeFile = useAppSelector(state => state.files.activeFile);
-    const recentDocuments =
-        useAppSelector(state => state.ui.recentDocuments) || [];
+    const recentFiles = useAppSelector(state => state.files.recentFiles) || [];
 
     useYamlSchema(yaml);
 
@@ -412,6 +410,22 @@ export const Editor: React.FC<EditorProps> = props => {
         }`;
     };
 
+    const handleOpenFileClick = () => {
+        const opts: FileExplorerOptions = {
+            filters: [
+                {
+                    name: "Webviz Config Files",
+                    extensions: ["yml", "yaml"],
+                },
+            ],
+        };
+        ipcRenderer.invoke("select-file", opts).then(result => {
+            if (result) {
+                openFile(result[0], dispatch, yamlParser);
+            }
+        });
+    };
+
     return (
         <div
             className="EditorWrapper"
@@ -436,12 +450,12 @@ export const Editor: React.FC<EditorProps> = props => {
                     <InsertDriveFile style={{marginRight: 8}} /> New File
                 </Button>
                 <br />
-                <Button onClick={() => ipcRenderer.send("FILE_OPEN")}>
+                <Button onClick={() => handleOpenFileClick()}>
                     <FolderOpen style={{marginRight: 8}} /> Open File
                 </Button>
                 <Typography variant="h6">Recent</Typography>
-                {recentDocuments.map(doc => (
-                    <li key={`recent-document:${doc}`}>
+                {recentFiles.map(doc => (
+                    <li key={`recent-file:${doc}`}>
                         <Tooltip title={doc} placement="right">
                             <Button
                                 onClick={() =>

@@ -11,8 +11,6 @@ import * as path from "path";
 import {Options, PythonShell, PythonShellError} from "python-shell";
 import * as which from "which";
 
-import {createMenu} from "./menu";
-
 export const openFile = () => {
     dialog
         .showOpenDialog({
@@ -28,9 +26,6 @@ export const openFile = () => {
             const window = BrowserWindow.getFocusedWindow();
             if (!fileObj.canceled && window) {
                 window.webContents.send("file-opened", fileObj.filePaths);
-                fileObj.filePaths.forEach((filePath: string) => {
-                    addRecentDocument(filePath);
-                });
             }
         })
         .catch(err => {
@@ -218,8 +213,8 @@ export const selectFileDialog = (
         if (options.allowMultiple) {
             dialogOptions.properties = ["multiSelections"];
         }
-        if (options.filter) {
-            dialogOptions.filters = options.filter;
+        if (options.filters) {
+            dialogOptions.filters = options.filters;
         }
     }
 
@@ -245,8 +240,8 @@ export const saveFileDialog = (
 ) => {
     const browserWindow = BrowserWindow.fromId(event.sender.id);
     let dialogOptions: Electron.SaveDialogSyncOptions = {};
-    if (options.filter) {
-        dialogOptions.filters = options.filter;
+    if (options.filters) {
+        dialogOptions.filters = options.filters;
     }
 
     dialogOptions.properties?.push("createDirectory");
@@ -267,53 +262,4 @@ export const saveFileDialog = (
 
 const getUserDataDir = (): string => {
     return app.getPath("userData");
-};
-
-export const addRecentDocument = (filePath: string) => {
-    const files = getRecentDocuments();
-    if (files.includes(filePath)) {
-        return;
-    }
-    if (files.length >= 5) {
-        files.shift();
-    }
-    files.unshift(filePath);
-    const recentDocumentsFile = path.join(
-        getUserDataDir(),
-        ".recent-documents"
-    );
-    fs.appendFileSync(recentDocumentsFile, `${filePath}\n`);
-    createMenu();
-    const window = BrowserWindow.getFocusedWindow();
-    if (window) {
-        window.webContents.send("update-recent-documents", files);
-    }
-};
-
-export const getRecentDocuments = (): string[] => {
-    const recentDocumentsFile = path.join(
-        getUserDataDir(),
-        ".recent-documents"
-    );
-    if (!fs.existsSync(recentDocumentsFile)) {
-        return [];
-    }
-    const content = fs.readFileSync(recentDocumentsFile);
-    return content
-        .toString()
-        .split("\n")
-        .filter(el => fs.existsSync(el));
-};
-
-export const clearRecentDocuments = () => {
-    const recentDocumentsFile = path.join(
-        getUserDataDir(),
-        ".recent-documents"
-    );
-    fs.writeFileSync(recentDocumentsFile, "");
-    createMenu();
-    const window = BrowserWindow.getFocusedWindow();
-    if (window) {
-        window.webContents.send("update-recent-documents", []);
-    }
 };

@@ -9,7 +9,7 @@ export type DirectoryOptions = {
 export type FileOptions = {
     isDirectoryExplorer?: false;
     allowMultiple?: boolean;
-    filter: FileFilter[];
+    filters: FileFilter[];
     defaultPath?: string;
     title?: string;
     action?: "save" | "open";

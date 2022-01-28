@@ -96,7 +96,7 @@ export const PythonInterpreter: React.FC = props => {
 
     const handleValueChanged = (value: string) => {
         const opts: FileExplorerOptions = {
-            filter: [
+            filters: [
                 {
                     name: "Python interpreter",
                     extensions: ["*"],
@@ -115,9 +115,9 @@ export const PythonInterpreter: React.FC = props => {
         setLocalValue(value);
     };
 
-    const openFileDialog = (filter: FileFilter[], defaultPath: string) => {
+    const openFileDialog = (filters: FileFilter[], defaultPath: string) => {
         const opts: FileExplorerOptions = {
-            filter,
+            filters,
             defaultPath,
         };
         ipcRenderer.invoke("select-file", opts).then(files => {

@@ -5,9 +5,8 @@ import React from "react";
 import {useMainProcessDataProvider} from "@components/MainProcessDataProvider/main-process-data-provider";
 
 import {useAppDispatch, useAppSelector} from "@redux/hooks";
-import {addNewFile} from "@redux/reducers/files";
+import {addNewFile, clearRecentFiles} from "@redux/reducers/files";
 import {addNotification} from "@redux/reducers/notifications";
-import {setRecentDocuments} from "@redux/reducers/ui";
 import {setInitialConfigurationDone} from "@redux/reducers/uiCoach";
 import {openFile, saveFile} from "@redux/thunks";
 import {saveFileAs} from "@redux/thunks/save-file";
@@ -46,7 +45,7 @@ export const IpcService: React.FC = props => {
                 return;
             }
             const options: FileExplorerOptions = {
-                filter: [
+                filters: [
                     {
                         name: "Webviz Config Files",
                         extensions: ["yml", "yaml"],
@@ -65,12 +64,26 @@ export const IpcService: React.FC = props => {
         ipcRenderer.on("save-file-as", (event, arg: string) => {
             saveFileAs(activeFilePath, arg, currentEditorValue, dispatch);
         });
-        ipcRenderer.on("update-recent-documents", (event, arg: string[]) => {
-            dispatch(setRecentDocuments(arg));
+        ipcRenderer.on("clear-recent-files", () => {
+            dispatch(clearRecentFiles());
         });
-        dispatch(
-            setRecentDocuments(ipcRenderer.sendSync("get-recent-documents"))
-        );
+        ipcRenderer.on("recent-files-updated", () => {
+            dispatch(
+                addNotification({
+                    type: NotificationType.SUCCESS,
+                    message: "Recent files successfully updated.",
+                })
+            );
+        });
+
+        ipcRenderer.on("recent-files-cleared", () => {
+            dispatch(
+                addNotification({
+                    type: NotificationType.SUCCESS,
+                    message: "Recent files successfully cleared.",
+                })
+            );
+        });
 
         ipcRenderer.on("debug:reset-init", (event, args) => {
             dispatch(setInitialConfigurationDone(false));

@@ -1,3 +1,5 @@
+import {ipcRenderer} from "electron";
+
 import {Draft, PayloadAction, createSlice} from "@reduxjs/toolkit";
 
 import electronStore from "@utils/electron-store";
@@ -45,7 +47,7 @@ export const filesSlice = createSlice({
                 currentlyActiveFile.editorViewState = action.payload.viewState;
             }
             state.activeFile = action.payload.filePath;
-            electronStore.set("files.activeFile", action.payload);
+            electronStore.set("files.activeFile", action.payload.filePath);
         },
         setValue: (state: Draft<FilesState>, action: PayloadAction<string>) => {
             state.files = state.files.map(el =>
@@ -75,14 +77,20 @@ export const filesSlice = createSlice({
             const openedFile = state.files.find(
                 el => el.filePath === action.payload.filePath
             );
+            state.activeFile = action.payload.filePath;
+            electronStore.set("files.activeFile", action.payload.filePath);
+
             if (openedFile) {
-                state.activeFile = action.payload.filePath;
                 return;
             }
 
             disposeUnusedDefaultModel(state.files);
 
-            state.activeFile = action.payload.filePath;
+            if (!state.recentFiles.includes(action.payload.filePath)) {
+                state.recentFiles.push(action.payload.filePath);
+                electronStore.set("files.recentFiles", state.recentFiles);
+                ipcRenderer.send("set-recent-files", state.recentFiles);
+            }
             state.files.push({
                 currentPage: undefined,
                 associatedWithFile: true,
@@ -176,6 +184,11 @@ export const filesSlice = createSlice({
             state: Draft<FilesState>,
             action: PayloadAction<string>
         ) => {
+            if (!state.recentFiles.includes(action.payload)) {
+                state.recentFiles.push(action.payload);
+                electronStore.set("files.recentFiles", state.recentFiles);
+                ipcRenderer.send("set-recent-files", state.recentFiles);
+            }
             state.files = state.files.map(f =>
                 f.filePath === action.payload
                     ? {
@@ -264,6 +277,19 @@ export const filesSlice = createSlice({
                     : file
             );
         },
+        setRecentFiles: (
+            state: Draft<FilesState>,
+            action: PayloadAction<string[]>
+        ) => {
+            state.recentFiles = action.payload;
+            ipcRenderer.send("set-recent-files", state.recentFiles);
+            electronStore.set("files.recentFiles", state.recentFiles);
+        },
+        clearRecentFiles: (state: Draft<FilesState>) => {
+            state.recentFiles = [];
+            ipcRenderer.send("clear-recent-files", state.recentFiles);
+            electronStore.set("files.recentFiles", []);
+        },
     },
 });
 
@@ -279,5 +305,7 @@ export const {
     setSelectedObject,
     setValue,
     setEditorViewState,
+    setRecentFiles,
+    clearRecentFiles,
 } = filesSlice.actions;
 export default filesSlice.reducer;

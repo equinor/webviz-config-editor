@@ -27,6 +27,8 @@ import {
 } from "./commands";
 import {PROCESS_ENV} from "./env";
 import {createMenu} from "./menu";
+import {RecentFiles} from "./recent-files";
+import {getAppIcon} from "./utils";
 
 Object.assign(console, ElectronLog.functions);
 moduleAlias.addAliases({
@@ -74,14 +76,28 @@ ipcMain.on("get-webviz-themes", (event, pythonInterpreter) => {
     findWebvizThemes(pythonInterpreter, event);
 });
 
+ipcMain.on("set-recent-files", (event, files: string[]) => {
+    if (files) {
+        RecentFiles.setRecentFiles(files);
+    } else RecentFiles.setRecentFiles([]);
+    createMenu();
+    event.reply("recent-files-updated");
+});
+
+ipcMain.on("clear-recent-files", event => {
+    RecentFiles.setRecentFiles([]);
+    createMenu();
+    event.reply("recent-files-cleared");
+});
+
 const appTitle = "Webviz Config Editor";
 
 function createWindow() {
-    const iconPath = path.join(__dirname, "..", "icon.png");
+    console.log(getAppIcon());
 
     const win = new BrowserWindow({
         title: appTitle,
-        icon: iconPath,
+        icon: getAppIcon(),
         width: 1280,
         height: 800,
         webPreferences: {

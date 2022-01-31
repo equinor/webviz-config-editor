@@ -161,7 +161,6 @@ export const createMenu = () => {
             submenu: [
                 {role: "reload"},
                 {role: "forceReload"},
-                {role: "toggleDevTools"},
                 {type: "separator"},
                 {role: "resetZoom"},
                 {role: "zoomIn"},
@@ -199,6 +198,16 @@ export const createMenu = () => {
                         );
                     },
                 },
+                {
+                    label: "Report a bug",
+                    click: async () => {
+                        /* eslint-disable global-require */
+                        const {shell} = require("electron");
+                        await shell.openExternal(
+                            "https://github.com/equinor/webviz-config-editor/issues"
+                        );
+                    },
+                },
             ],
         },
         ...(isDev
@@ -206,6 +215,7 @@ export const createMenu = () => {
                   {
                       label: "Debug",
                       submenu: [
+                          {role: "toggleDevTools"},
                           {
                               label: "Reset Initialization",
                               click(_: any, browserWindow: BrowserWindow) {

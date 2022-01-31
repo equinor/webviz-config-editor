@@ -256,6 +256,7 @@
             "!notarization/**/*"
         ],
         "extraResources": [
+            "./assets/**",
             {
                 "from": "resources",
                 "to": "resources"

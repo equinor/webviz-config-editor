@@ -89,7 +89,7 @@ export const filesSlice = createSlice({
             if (!state.recentFiles.includes(action.payload.filePath)) {
                 state.recentFiles.push(action.payload.filePath);
                 electronStore.set("files.recentFiles", state.recentFiles);
-                ipcRenderer.send("set-recent-files", state.recentFiles);
+                ipcRenderer.send("set-recent-files", [...state.recentFiles]);
             }
             state.files.push({
                 currentPage: undefined,

@@ -7,6 +7,7 @@
 import {ThemeProvider, createTheme} from "@mui/material";
 import {IpcService} from "@services/ipc-service";
 import {PluginParserService} from "@services/plugin-parser";
+import {WebvizBuildService} from "@services/webviz-build-service";
 import {YamlParserService} from "@services/yaml-parser";
 
 import React from "react";
@@ -63,8 +64,10 @@ function App(): JSX.Element {
                         <YamlParserService>
                             <PluginParserService>
                                 <IpcService>
-                                    <GetStartedDialog />
-                                    <MainWindow />
+                                    <WebvizBuildService>
+                                        <GetStartedDialog />
+                                        <MainWindow />
+                                    </WebvizBuildService>
                                 </IpcService>
                             </PluginParserService>
                         </YamlParserService>

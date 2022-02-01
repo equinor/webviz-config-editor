@@ -36,6 +36,8 @@ import {PreviewMode} from "@components/LivePreview/live-preview";
 
 import {useAppDispatch, useAppSelector} from "@redux/hooks";
 
+import {EventSource} from "@shared-types/files";
+
 import "./plugin-visualizer.css";
 
 export type PluginVisualizerType = {
@@ -78,7 +80,8 @@ export const PluginVisualizer: React.FC<PluginVisualizerType> = props => {
                 0,
                 props.pluginData.endLineNumber,
                 0
-            )
+            ),
+            EventSource.Preview
         );
     };
 

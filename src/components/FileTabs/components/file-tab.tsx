@@ -1,5 +1,5 @@
 import {Close} from "@mui/icons-material";
-import {useTheme} from "@mui/material";
+import {Tooltip, useTheme} from "@mui/material";
 
 import React from "react";
 
@@ -55,25 +55,27 @@ export const FileTab: React.FC<FileTabProps> = props => {
     };
 
     return (
-        <div
-            className={`FileTab${active ? " FileTab--active" : ""}${
-                modified ? " FileTab--modified" : ""
-            }`}
-            onClick={() => handleClickEvent()}
-            style={{
-                backgroundColor: active
-                    ? theme.palette.action.disabledBackground
-                    : theme.palette.background.paper,
-                color: theme.palette.text.primary,
-            }}
-        >
-            {filename}
+        <Tooltip title={props.filePath}>
             <div
-                className="FileTab__CloseButton"
-                onClick={e => handleCloseEvent(e)}
+                className={`FileTab${active ? " FileTab--active" : ""}${
+                    modified ? " FileTab--modified" : ""
+                }`}
+                onClick={() => handleClickEvent()}
+                style={{
+                    backgroundColor: active
+                        ? theme.palette.action.disabledBackground
+                        : theme.palette.background.paper,
+                    color: theme.palette.text.primary,
+                }}
             >
-                <Close fontSize="inherit" />
+                {filename}
+                <div
+                    className="FileTab__CloseButton"
+                    onClick={e => handleCloseEvent(e)}
+                >
+                    <Close fontSize="inherit" />
+                </div>
             </div>
-        </div>
+        </Tooltip>
     );
 };

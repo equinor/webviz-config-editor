@@ -10,6 +10,8 @@ import {PluginArgumentObject} from "@utils/yaml-parser";
 
 import {useAppSelector} from "@redux/hooks";
 
+import {EventSource} from "@shared-types/files";
+
 import {isNumber} from "lodash";
 
 import {ArrayPluginArgumentObject, ArrayView} from "./array-view";
@@ -48,7 +50,8 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                 0,
                 props.value.endLineNumber,
                 0
-            )
+            ),
+            EventSource.Preview
         );
     };
 
@@ -70,6 +73,7 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                             <ObjectView
                                 name={el.name}
                                 value={el as ObjectPluginArgumentObject}
+                                key={el.name}
                             />
                         );
                     }
@@ -82,6 +86,7 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                                 <ObjectView
                                     name={el.name}
                                     value={el as ObjectPluginArgumentObject}
+                                    key={el.name}
                                 />
                             );
                         }
@@ -89,17 +94,36 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                             <ArrayView
                                 name={el.name}
                                 value={el as ArrayPluginArgumentObject}
+                                key={el.name}
                             />
                         );
                     }
                     if (el.value.constructor === Boolean) {
-                        return <BooleanView name={el.name} value={el} />;
+                        return (
+                            <BooleanView
+                                name={el.name}
+                                value={el}
+                                key={el.name}
+                            />
+                        );
                     }
                     if (el.value.constructor === String) {
-                        return <StringView name={el.name} value={el} />;
+                        return (
+                            <StringView
+                                name={el.name}
+                                value={el}
+                                key={el.name}
+                            />
+                        );
                     }
                     if (isNumber(el.value)) {
-                        return <IntegerView name={el.name} value={el} />;
+                        return (
+                            <IntegerView
+                                name={el.name}
+                                value={el}
+                                key={el.name}
+                            />
+                        );
                     }
                     return <></>;
                 })}

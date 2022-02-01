@@ -23,6 +23,7 @@ const formatConsoleLine = (line: string): JSX.Element => {
         [key: string]: {color: string; backgroundColor: string};
     } = {
         "37;43m": {color: "#fff", backgroundColor: "#DEA900"},
+        "37;41m": {color: "#fff", backgroundColor: "#890000"},
     };
     /* eslint-disable no-control-regex */
     const regexp = /(\x1b[[0-9]{1,};?[0-9]{0,}m)([^\x1b]{0,})/g;
@@ -101,8 +102,8 @@ export const Play: React.FC = () => {
                                     variant="body1"
                                     color={theme.palette.text.primary}
                                 >
-                                    You have to save your file before being able
-                                    to display it.
+                                    Your file has to be saved before it can be
+                                    displayed.
                                 </Typography>
                             </Grid>
                         </>
@@ -162,7 +163,7 @@ export const Play: React.FC = () => {
                         </Grid>
                     </Paper>
                     {webvizBuilder.consoleMessages.map(msg => (
-                        <div className="ConsoleLine">
+                        <div className="ConsoleLine" key={msg}>
                             {formatConsoleLine(msg)}
                         </div>
                     ))}

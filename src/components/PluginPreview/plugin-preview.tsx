@@ -8,7 +8,11 @@ import {monaco} from "react-monaco-editor";
 
 import {LayoutObject, PluginArgumentObject} from "@utils/yaml-parser";
 
+import {ReadMore} from "@components/ReadMore";
+
 import {useAppSelector} from "@redux/hooks";
+
+import {EventSource} from "@shared-types/files";
 
 import {ArrayPluginArgumentObject, ArrayView} from "./components/array-view";
 import {IntegerView} from "./components/integer-view";
@@ -37,7 +41,8 @@ export const PluginPreview: React.FC<PluginPreviewProps> = props => {
                 0,
                 props.data.endLineNumber,
                 0
-            )
+            ),
+            EventSource.Preview
         );
     };
 
@@ -75,7 +80,9 @@ export const PluginPreview: React.FC<PluginPreviewProps> = props => {
         >
             <h3>{title}</h3>
             <span className="PluginDescription">
-                <ReactMarkdown>{description}</ReactMarkdown>
+                <ReadMore minHeight={100} initiallyOpen={false}>
+                    <ReactMarkdown>{description}</ReactMarkdown>
+                </ReadMore>
             </span>
             <List>
                 {content && content.constructor === Object

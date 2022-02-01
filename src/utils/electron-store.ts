@@ -137,6 +137,7 @@ const defaults = {
     ui: {
         settings: {
             theme: "light",
+            editorFontSize: 1.0,
         },
         paneConfiguration: {
             "Editor-Issues": [0.7, 0.3],

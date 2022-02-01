@@ -10,6 +10,8 @@ import {PluginArgumentObject} from "@utils/yaml-parser";
 
 import {useAppSelector} from "@redux/hooks";
 
+import {EventSource} from "@shared-types/files";
+
 export type ArrayPluginArgumentObject = Omit<PluginArgumentObject, "value"> & {
     value: any[];
 };
@@ -41,7 +43,8 @@ export const ArrayView: React.FC<ComponentsProps> = props => {
                 0,
                 props.value.endLineNumber,
                 0
-            )
+            ),
+            EventSource.Preview
         );
     };
 

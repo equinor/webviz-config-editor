@@ -42,12 +42,11 @@ export type File = {
     navigationItems: NavigationType;
     yamlObjects: YamlObject[];
     selectedYamlObject: YamlMetaObject | undefined;
-    updateSource: UpdateSource;
     currentPage: LayoutObject | undefined;
     title: string;
 };
 
-export enum UpdateSource {
+export enum EventSource {
     Editor = "EDITOR",
     Preview = "PREVIEW",
     Plugin = "PLUGIN",
@@ -65,4 +64,5 @@ export type FilesState = {
     files: File[];
     activeFile: string;
     recentFiles: string[];
+    eventSource: EventSource;
 };

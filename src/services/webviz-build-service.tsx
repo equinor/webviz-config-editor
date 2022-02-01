@@ -14,6 +14,7 @@ import {NotificationType} from "@shared-types/notifications";
 import fs from "fs";
 import path from "path";
 import {Options, PythonShell, PythonShellError} from "python-shell";
+import {uuid} from "uuidv4";
 
 export enum WebvizBuildState {
     Loading = "loading",
@@ -30,6 +31,15 @@ type Context = {
     builderState: WebvizBuildState;
 };
 
+const createTempFilePath = (dir: string): string => {
+    let tempPath = "";
+    while (tempPath === "" || fs.existsSync(tempPath)) {
+        tempPath = path.resolve(dir, `.~${uuid()}.yaml`);
+    }
+    ipcRenderer.send("add-temp-file", tempPath);
+    return tempPath;
+};
+
 const [useWebvizBuildServiceContext, WebvizBuildServiceContextProvider] =
     createGenericContext<Context>();
 
@@ -42,6 +52,7 @@ export const WebvizBuildService: React.FC = props => {
     const currentFile = useAppSelector(state =>
         state.files.files.find(file => file.filePath === state.files.activeFile)
     );
+    console.log(currentFile);
     const webvizTheme = useAppSelector(state => state.preferences.webvizTheme);
     const pythonInterpreterPath = useAppSelector(
         state => state.preferences.pathToPythonInterpreter
@@ -74,20 +85,10 @@ export const WebvizBuildService: React.FC = props => {
         if (!currentFile || !currentFile.associatedWithFile) {
             return;
         }
-        setTempFilePath(
-            path.resolve(
-                path.dirname(activeFilePath),
-                `%temp%_${path.basename(activeFilePath)}`
-            )
-        );
+        const tempPath = createTempFilePath(path.dirname(activeFilePath));
+        setTempFilePath(tempPath);
         try {
-            fs.writeFileSync(
-                path.resolve(
-                    path.dirname(activeFilePath),
-                    `%temp%_${path.basename(activeFilePath)}`
-                ),
-                currentFile.editorValue
-            );
+            fs.writeFileSync(tempPath, currentFile.editorValue);
         } catch (e) {
             setBuilderState(WebvizBuildState.FileError);
             dispatch(
@@ -98,20 +99,8 @@ export const WebvizBuildService: React.FC = props => {
             );
         }
         return () => {
-            if (
-                fs.existsSync(
-                    path.resolve(
-                        path.dirname(activeFilePath),
-                        `%temp%_${path.basename(activeFilePath)}`
-                    )
-                )
-            ) {
-                fs.rmSync(
-                    path.resolve(
-                        path.dirname(activeFilePath),
-                        `%temp%_${path.basename(activeFilePath)}`
-                    )
-                );
+            if (fs.existsSync(tempPath)) {
+                fs.rmSync(tempPath);
             }
         };
     }, [activeFilePath]);
@@ -169,12 +158,7 @@ export const WebvizBuildService: React.FC = props => {
         });
 
         pythonShell.on("pythonError", (error: PythonShellError) => {
-            dispatch(
-                addNotification({
-                    type: NotificationType.ERROR,
-                    message: error.message,
-                })
-            );
+            setConsoleMessages([...consoleMessages, `\x1b[37;41m ${error}`]);
         });
 
         interval.current = setInterval(() => {

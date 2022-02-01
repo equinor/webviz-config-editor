@@ -18,6 +18,7 @@ export type UiState = {
     currentPage: Pages;
     settings: {
         theme: Themes;
+        editorFontSize: number;
     };
     paneConfiguration: PaneConfiguration[];
 };

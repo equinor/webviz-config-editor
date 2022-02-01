@@ -10,9 +10,9 @@ import initialState from "@redux/initial-state";
 
 import {
     CodeEditorViewState,
+    EventSource,
     File,
     FilesState,
-    UpdateSource,
 } from "@shared-types/files";
 import {NavigationType} from "@shared-types/navigation";
 
@@ -108,7 +108,6 @@ export const filesSlice = createSlice({
                 navigationItems: [],
                 yamlObjects: [],
                 selectedYamlObject: undefined,
-                updateSource: UpdateSource.Editor,
                 title: "",
             });
         },
@@ -138,7 +137,6 @@ export const filesSlice = createSlice({
                 navigationItems: [],
                 yamlObjects: [],
                 selectedYamlObject: undefined,
-                updateSource: UpdateSource.Editor,
                 title: "",
             });
             if (state.files.length === 1) {
@@ -265,8 +263,10 @@ export const filesSlice = createSlice({
             action: PayloadAction<{
                 object: YamlMetaObject | undefined;
                 page: LayoutObject;
+                source: EventSource;
             }>
         ) => {
+            state.eventSource = action.payload.source;
             state.files = state.files.map(file =>
                 file.filePath === state.activeFile
                     ? {

@@ -4,7 +4,7 @@ import electronStore from "@utils/electron-store";
 import {getFileContent} from "@utils/file-operations";
 import {generateHashCode} from "@utils/hash";
 
-import {File, FilesState, UpdateSource} from "@shared-types/files";
+import {EventSource, File, FilesState} from "@shared-types/files";
 import {NotificationsState} from "@shared-types/notifications";
 import {PreferencesState} from "@shared-types/preferences";
 import {Pages, Themes, UiState} from "@shared-types/ui";
@@ -20,6 +20,7 @@ const initialUiState: UiState = {
     currentPage: Pages.Editor,
     settings: {
         theme: electronStore.get("ui.settings.theme") || Themes.Light,
+        editorFontSize: electronStore.get("ui.settings.editorFontSize") || 1.0,
     },
     paneConfiguration: Object.keys(paneConfiguration).map(key => ({
         name: key,
@@ -43,6 +44,7 @@ const initialUiCoachState: UiCoachState = {
 const initialFilesState: FilesState = {
     activeFile: electronStore.get("files.activeFile"),
     recentFiles: electronStore.get("files.recentFiles") || [],
+    eventSource: EventSource.Editor,
     files: electronStore.get("files.files").map((file: any): File => {
         const fileContent = getFileContent(file.filePath);
         return {
@@ -52,7 +54,6 @@ const initialFilesState: FilesState = {
             editorViewState: file.editorViewState,
             navigationItems: [],
             yamlObjects: [],
-            updateSource: UpdateSource.Editor,
             currentPage: undefined,
             hash: generateHashCode(fileContent),
             selection: {
@@ -82,7 +83,6 @@ if (initialFilesState.files.length === 0) {
         editorViewState: null,
         navigationItems: [],
         yamlObjects: [],
-        updateSource: UpdateSource.Editor,
         currentPage: undefined,
         hash: generateHashCode(""),
         selection: {

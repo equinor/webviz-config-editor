@@ -5,6 +5,7 @@ import React from "react";
 
 import {useAppSelector} from "@redux/hooks";
 
+import {EventSource} from "@shared-types/files";
 import {
     GroupType,
     NavigationItemType,
@@ -141,7 +142,7 @@ export const Menu: React.FC<MenuProps> = props => {
 
     const handlePageChange = (pageId: string) => {
         if (pageId !== "") {
-            yamlParser.setCurrentPage(pageId);
+            yamlParser.setCurrentPage(pageId, EventSource.Preview);
         }
     };
 

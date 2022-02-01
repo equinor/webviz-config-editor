@@ -43,7 +43,7 @@ function App(): JSX.Element {
                 });
             },
         }),
-        []
+        [dispatch]
     );
 
     const theme = React.useMemo(

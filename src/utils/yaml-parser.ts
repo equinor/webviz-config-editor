@@ -152,6 +152,7 @@ export class YamlParser {
     private idObjectsMap: IdLinesMapType[];
     private registeredElements: RegisteredElements[];
     private numberOfLayoutItems: NumberOfLayoutItems;
+    private anchors: {[key: string]: yaml.CST.Token | undefined};
     constructor() {
         this.objects = [];
         this.parsedString = "";
@@ -163,6 +164,7 @@ export class YamlParser {
             pages: 0,
             plugins: 0,
         };
+        this.anchors = {};
     }
 
     getLineNumber(offset: number): number {
@@ -302,6 +304,21 @@ export class YamlParser {
         return false;
     }
 
+    private static isAnchorItem(item: BlockMapItem): boolean {
+        if (
+            item.key !== undefined &&
+            item.key !== null &&
+            item.key.type === "scalar" &&
+            item.sep.find(s => s.type === "anchor")
+        ) {
+            const anchorName = item.sep.find(s => s.type === "anchor")?.source;
+            if (item.value && anchorName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static isOptionsItem(item: BlockMapItem): boolean {
         if (this.isScalarKeyItemWithValue(item, "options")) {
             if (item.value && item.value.type === "block-map") {
@@ -339,6 +356,10 @@ export class YamlParser {
                     this.objects.push(
                         this.makeOptionsObject(item as BlockMapBlockMapItem)
                     );
+                }
+
+                if (YamlParser.isAnchorItem(item)) {
+                    this.makeAnchorObject(item as BlockMapItem);
                 }
 
                 if (YamlParser.isLayoutItem(item)) {
@@ -408,6 +429,15 @@ export class YamlParser {
             },
             optionsItem
         );
+    }
+
+    private makeAnchorObject(anchorItem: BlockMapItem) {
+        const anchorName = anchorItem.sep?.find(
+            s => s.type === "anchor"
+        )?.source;
+        if (anchorName) {
+            this.anchors[anchorName.substring(1)] = anchorItem.value;
+        }
     }
 
     private makeLayoutObject(
@@ -565,6 +595,17 @@ export class YamlParser {
         const optionObjects: PluginArgumentObject[] = [];
         options.forEach((option: BlockMapItem) => {
             if (option.key && option.value && option.key.type === "scalar") {
+                if (
+                    option.value.type === "alias" &&
+                    Object.keys(this.anchors).includes(
+                        option.value.source.substring(1)
+                    ) &&
+                    this.anchors[option.value.source.substring(1)] !== undefined
+                ) {
+                    option.value = this.anchors[
+                        option.value.source.substring(1)
+                    ] as yaml.CST.Token;
+                }
                 if (
                     option.value.type === "scalar" ||
                     option.value.type === "single-quoted-scalar" ||

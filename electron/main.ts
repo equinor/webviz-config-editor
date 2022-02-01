@@ -15,6 +15,7 @@ import {
     FileOptions,
 } from "@shared-types/file-explorer-options";
 
+import fs from "fs";
 import moduleAlias from "module-alias";
 import * as path from "path";
 
@@ -44,6 +45,18 @@ const isDev = PROCESS_ENV.NODE_ENV === "development";
 
 const userDataDir = app.getPath("userData");
 const userHomeDir = app.getPath("home");
+
+const tempFiles: string[] = [];
+const tempFilesPath = path.resolve(userDataDir, ".tempfiles");
+
+ipcMain.on("add-temp-file", (event, file: string) => {
+    tempFiles.push(file);
+    try {
+        fs.writeFileSync(tempFilesPath, tempFiles.join("\n"));
+    } catch (e) {
+        console.log(e);
+    }
+});
 
 ipcMain.on("get-app-data", event => {
     event.returnValue = {
@@ -157,8 +170,36 @@ const openApplication = async () => {
     });
 
     app.on("activate", () => {
+        try {
+            let legacyTempFiles: string[] = [];
+            if (fs.existsSync(tempFilesPath)) {
+                legacyTempFiles = fs
+                    .readFileSync(tempFilesPath)
+                    .toString()
+                    .split("\n");
+                fs.rmSync(tempFilesPath);
+            }
+            legacyTempFiles.forEach(file => {
+                fs.rmSync(file);
+            });
+        } catch (e) {
+            console.log(e);
+        }
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
+        }
+    });
+
+    app.on("will-quit", () => {
+        try {
+            tempFiles.forEach(file => {
+                fs.rmSync(file);
+            });
+            if (fs.existsSync(tempFilesPath)) {
+                fs.rmSync(tempFilesPath);
+            }
+        } catch (e) {
+            console.log(e);
         }
     });
 };

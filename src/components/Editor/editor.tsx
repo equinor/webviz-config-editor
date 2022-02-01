@@ -37,7 +37,7 @@ import {
 import {openFile} from "@redux/thunks";
 
 import {FileExplorerOptions} from "@shared-types/file-explorer-options";
-import {CodeEditorViewState} from "@shared-types/files";
+import {CodeEditorViewState, EventSource} from "@shared-types/files";
 
 // @ts-ignore
 import {Environment, Uri, languages} from "monaco-editor";
@@ -97,8 +97,7 @@ const {yaml} = languages || {};
 
 type EditorProps = {};
 
-export const Editor: React.FC<EditorProps> = props => {
-    const [fontSize, setFontSize] = React.useState<number>(1);
+export const Editor: React.FC<EditorProps> = () => {
     const [noModels, setNoModels] = React.useState<boolean>(false);
     const [selection, setSelection] = React.useState<monaco.ISelection | null>(
         null
@@ -131,21 +130,19 @@ export const Editor: React.FC<EditorProps> = props => {
     const files = useAppSelector(state => state.files.files);
     const activeFile = useAppSelector(state => state.files.activeFile);
     const recentFiles = useAppSelector(state => state.files.recentFiles) || [];
+    const eventSource = useAppSelector(state => state.files.eventSource);
+    const fontSize = useAppSelector(state => state.ui.settings.editorFontSize);
 
     useYamlSchema(yaml);
 
-    const fontSizes = [
-        0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
-        2,
-    ];
-
     React.useEffect(() => {
+        const timeoutRef = timeout.current;
         return () => {
-            if (timeout.current) {
-                clearTimeout(timeout.current);
+            if (timeoutRef) {
+                clearTimeout(timeoutRef);
             }
         };
-    });
+    }, [timeout]);
 
     const handleCursorPositionChange = (
         e: monaco.editor.ICursorPositionChangedEvent
@@ -174,7 +171,8 @@ export const Editor: React.FC<EditorProps> = props => {
                     e.position.column,
                     e.position.lineNumber,
                     e.position.column
-                )
+                ),
+                EventSource.Editor
             );
             if (monacoEditorRef.current) {
                 dispatch(
@@ -204,7 +202,7 @@ export const Editor: React.FC<EditorProps> = props => {
             if (e.reason === monaco.editor.CursorChangeReason.ContentFlush) {
                 return;
             }
-            yamlParser.updateSelection(e.selection);
+            yamlParser.updateSelection(e.selection, EventSource.Editor);
             if (monacoEditorRef.current) {
                 dispatch(
                     setEditorViewState(
@@ -253,13 +251,15 @@ export const Editor: React.FC<EditorProps> = props => {
                     },
                 },
             ]);
-
-            monacoEditorRef.current.revealLinesInCenterIfOutsideViewport(
-                selectedYamlObject.startLineNumber,
-                selectedYamlObject.endLineNumber
-            );
+            console.log(eventSource);
+            if (eventSource !== EventSource.Editor) {
+                monacoEditorRef.current.revealLinesInCenterIfOutsideViewport(
+                    selectedYamlObject.startLineNumber,
+                    selectedYamlObject.endLineNumber
+                );
+            }
         }
-    }, [selectedYamlObject]);
+    }, [selectedYamlObject, eventSource]);
 
     const handleFileChange = (filePath: string) => {
         if (monacoEditorRef.current) {
@@ -403,12 +403,6 @@ export const Editor: React.FC<EditorProps> = props => {
             }
         };
     }, []);
-
-    const makeIssueKey = (marker: monaco.editor.IMarker): string => {
-        return `${marker.resource.toString()}-${marker.startLineNumber}-${
-            marker.endLineNumber
-        }`;
-    };
 
     const handleOpenFileClick = () => {
         const opts: FileExplorerOptions = {

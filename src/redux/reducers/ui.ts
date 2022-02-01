@@ -40,8 +40,20 @@ export const uiSlice = createSlice({
                 });
             }
         },
+        setEditorFontSize: (
+            state: Draft<UiState>,
+            action: PayloadAction<number>
+        ) => {
+            electronStore.set("ui.settings.editorFontSize", action.payload);
+            state.settings.editorFontSize = action.payload;
+        },
     },
 });
 
-export const {setCurrentPage, setTheme, setPaneConfiguration} = uiSlice.actions;
+export const {
+    setCurrentPage,
+    setTheme,
+    setPaneConfiguration,
+    setEditorFontSize,
+} = uiSlice.actions;
 export default uiSlice.reducer;

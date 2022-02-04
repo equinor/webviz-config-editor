@@ -1,4 +1,4 @@
-import {useTheme} from "@mui/material";
+import {Skeleton, useTheme} from "@mui/material";
 import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
@@ -200,7 +200,16 @@ export const Menu: React.FC<MenuProps> = props => {
                     handlePageChange
                 )}
             {props.navigationItems.length === 0 && (
-                <i>No navigation items...</i>
+                <>
+                    {" "}
+                    {[0, 1, 2].map(el => (
+                        <Skeleton
+                            animation={false}
+                            key={`SkeletonBar${el}`}
+                            sx={{p: 1}}
+                        />
+                    ))}
+                </>
             )}
         </div>
     );

@@ -33,13 +33,13 @@ export const IpcService: React.FC = props => {
     const mainProcessData = useMainProcessDataProvider();
 
     React.useEffect(() => {
-        ipcRenderer.on("file-opened", (event, args) => {
+        ipcRenderer.on("file-opened", (_, args) => {
             openFile(args[0], dispatch, yamlParser);
         });
-        ipcRenderer.on("new-file", (event, args) => {
+        ipcRenderer.on("new-file", () => {
             dispatch(addNewFile());
         });
-        ipcRenderer.on("save-file", (event, args) => {
+        ipcRenderer.on("save-file", () => {
             if (associatedWithFile) {
                 saveFile(activeFilePath, currentEditorValue, dispatch);
                 return;
@@ -58,11 +58,42 @@ export const IpcService: React.FC = props => {
                 defaultPath: mainProcessData.userHomeDir,
             };
             ipcRenderer.invoke("save-file", options).then(arg => {
-                saveFileAs(activeFilePath, arg, currentEditorValue, dispatch);
+                if (arg) {
+                    saveFileAs(
+                        activeFilePath,
+                        arg,
+                        currentEditorValue,
+                        dispatch
+                    );
+                }
             });
         });
-        ipcRenderer.on("save-file-as", (event, arg: string) => {
-            saveFileAs(activeFilePath, arg, currentEditorValue, dispatch);
+        ipcRenderer.on("save-file-as", () => {
+            const options: FileExplorerOptions = {
+                filters: [
+                    {
+                        name: "Webviz Config Files",
+                        extensions: ["yml", "yaml"],
+                    },
+                ],
+                action: "save",
+                allowMultiple: false,
+                title: "Save file as...",
+                isDirectoryExplorer: false,
+                defaultPath: associatedWithFile
+                    ? activeFilePath
+                    : mainProcessData.userHomeDir,
+            };
+            ipcRenderer.invoke("save-file", options).then(arg => {
+                if (arg) {
+                    saveFileAs(
+                        activeFilePath,
+                        arg,
+                        currentEditorValue,
+                        dispatch
+                    );
+                }
+            });
         });
         ipcRenderer.on("clear-recent-files", () => {
             dispatch(clearRecentFiles());
@@ -85,7 +116,7 @@ export const IpcService: React.FC = props => {
             );
         });
 
-        ipcRenderer.on("debug:reset-init", (event, args) => {
+        ipcRenderer.on("debug:reset-init", () => {
             dispatch(setInitialConfigurationDone(false));
             dispatch(
                 addNotification({
@@ -101,9 +132,19 @@ export const IpcService: React.FC = props => {
             ipcRenderer.removeAllListeners("save-file");
             ipcRenderer.removeAllListeners("save-file-as");
             ipcRenderer.removeAllListeners("update-recent-documents");
+            ipcRenderer.removeAllListeners("clear-recent-files");
+            ipcRenderer.removeAllListeners("recent-files-updated");
+            ipcRenderer.removeAllListeners("recent-files-cleared");
             ipcRenderer.removeAllListeners("debug:reset-init");
         };
-    }, [activeFilePath, currentEditorValue, dispatch]);
+    }, [
+        activeFilePath,
+        currentEditorValue,
+        dispatch,
+        mainProcessData,
+        associatedWithFile,
+        yamlParser,
+    ]);
 
     return <>{props.children}</>;
 };

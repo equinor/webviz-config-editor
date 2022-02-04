@@ -13,18 +13,9 @@ type ResizablePanelsProps = {
     children: React.ReactNode[];
 };
 
-type Point = {
-    x: number;
-    y: number;
-};
-
 export const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
     const [isDragging, setIsDragging] = React.useState<boolean>();
     const [currentIndex, setCurrentIndex] = React.useState<number>(0);
-    const [initialPosition, setInitialPosition] = React.useState<Point>({
-        x: 0,
-        y: 0,
-    });
     const [sizes, setSizes] = React.useState<number[]>(
         useAppSelector(
             state =>
@@ -53,10 +44,9 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         ) => {
             window.addEventListener("selectstart", e => e.preventDefault());
             setCurrentIndex(index);
-            setInitialPosition({x: event.clientX, y: event.clientY});
             setIsDragging(true);
         },
-        [setCurrentIndex, setIsDragging, setInitialPosition]
+        [setCurrentIndex, setIsDragging]
     );
 
     React.useEffect(() => {
@@ -127,11 +117,12 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
             return;
         }
 
-        const stopResize = (event: MouseEvent) => {
+        const stopResize = () => {
             window.removeEventListener("selectstart", e => e.preventDefault());
+            if (isDragging) {
+                dispatch(setPaneConfiguration({name: props.id, sizes}));
+            }
             setIsDragging(false);
-
-            dispatch(setPaneConfiguration({name: props.id, sizes}));
         };
         document.addEventListener("mousemove", resize);
         document.addEventListener("mouseup", stopResize);

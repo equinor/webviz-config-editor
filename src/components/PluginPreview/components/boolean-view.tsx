@@ -1,6 +1,4 @@
 import "../plugin-preview.css";
-import {ToggleOn} from "@mui/icons-material";
-import {ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
@@ -11,6 +9,8 @@ import {PluginArgumentObject} from "@utils/yaml-parser";
 import {useAppSelector} from "@redux/hooks";
 
 import {EventSource} from "@shared-types/files";
+
+import {ListItem} from "./list-item";
 
 type ComponentsProps = {
     name: string;
@@ -46,14 +46,11 @@ export const BooleanView: React.FC<ComponentsProps> = props => {
 
     return (
         <ListItem
+            type="boolean"
             onClick={e => handleClickEvent(e)}
-            secondaryAction={props.value.value}
+            name={props.name}
+            value={props.value.value.toString()}
             className={isSelected ? "Plugin--selected" : ""}
-        >
-            <ListItemAvatar>
-                <ToggleOn />
-            </ListItemAvatar>
-            <ListItemText primary={props.name} secondary="" />
-        </ListItem>
+        />
     );
 };

@@ -38,6 +38,10 @@
     overflow: auto;
 }
 
+.LivePreview__Page > div {
+    min-width: 300px;
+}
+
 .LivePreview__NoContent {
     padding: 16px;
     display: flex;
@@ -46,21 +50,4 @@
     text-align: center;
     width: max-content;
     flex-grow: 4;
-}
-
-.LivePreview *::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.LivePreview *::-webkit-scrollbar {
-    width: 12px;
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.LivePreview *::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    background-color: #555;
 }

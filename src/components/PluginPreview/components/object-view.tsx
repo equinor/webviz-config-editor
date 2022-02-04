@@ -1,6 +1,4 @@
 import "../plugin-preview.css";
-import {DataObject} from "@mui/icons-material";
-import {List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
@@ -17,6 +15,8 @@ import {isNumber} from "lodash";
 import {ArrayPluginArgumentObject, ArrayView} from "./array-view";
 import {BooleanView} from "./boolean-view";
 import {IntegerView} from "./integer-view";
+import {List} from "./list";
+import {ListItem} from "./list-item";
 import {StringView} from "./string-view";
 
 export type ObjectPluginArgumentObject = Omit<PluginArgumentObject, "value"> & {
@@ -56,17 +56,14 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
     };
 
     return (
-        <>
+        <div className={isSelected ? "Plugin--selected" : ""}>
             <ListItem
+                type="object"
+                name={props.name}
+                value=""
                 onClick={e => handleClickEvent(e)}
-                className={isSelected ? "Plugin--selected" : ""}
-            >
-                <ListItemAvatar>
-                    <DataObject />
-                </ListItemAvatar>
-                <ListItemText primary={props.name} secondary="" />
-            </ListItem>
-            <List component="div" disablePadding sx={{pl: 4}}>
+            />
+            <List indentation={24}>
                 {props.value.value.map(el => {
                     if (el.value.constructor === Object) {
                         return (
@@ -128,6 +125,6 @@ export const ObjectView: React.FC<ComponentsProps> = props => {
                     return <></>;
                 })}
             </List>
-        </>
+        </div>
     );
 };

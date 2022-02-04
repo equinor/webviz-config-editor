@@ -1,6 +1,4 @@
 import "../plugin-preview.css";
-import {DataArray} from "@mui/icons-material";
-import {List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import {useYamlParser} from "@services/yaml-parser";
 
 import React from "react";
@@ -11,6 +9,9 @@ import {PluginArgumentObject} from "@utils/yaml-parser";
 import {useAppSelector} from "@redux/hooks";
 
 import {EventSource} from "@shared-types/files";
+
+import {List} from "./list";
+import {ListItem} from "./list-item";
 
 export type ArrayPluginArgumentObject = Omit<PluginArgumentObject, "value"> & {
     value: any[];
@@ -49,25 +50,24 @@ export const ArrayView: React.FC<ComponentsProps> = props => {
     };
 
     return (
-        <>
+        <div className={isSelected ? "Plugin--selected" : ""}>
             <ListItem
+                type="array"
                 onClick={e => handleClickEvent(e)}
-                className={isSelected ? "Plugin--selected" : ""}
-            >
-                <ListItemAvatar>
-                    <DataArray />
-                </ListItemAvatar>
-                <ListItemText primary={props.name} secondary="description" />
-            </ListItem>
-            <List component="div" disablePadding sx={{pl: 4}}>
+                name={props.name}
+            />
+            <List indentation={24}>
                 {props.value.value.map(el => {
                     return (
-                        <ListItem>
-                            <ListItemText primary={JSON.stringify(el)} />
-                        </ListItem>
+                        <ListItem
+                            type="list-item"
+                            name={JSON.stringify(el)}
+                            value=""
+                            onClick={e => handleClickEvent(e)}
+                        />
                     );
                 })}
             </List>
-        </>
+        </div>
     );
 };

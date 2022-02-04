@@ -52,7 +52,6 @@ export const WebvizBuildService: React.FC = props => {
     const currentFile = useAppSelector(state =>
         state.files.files.find(file => file.filePath === state.files.activeFile)
     );
-    console.log(currentFile);
     const webvizTheme = useAppSelector(state => state.preferences.webvizTheme);
     const pythonInterpreterPath = useAppSelector(
         state => state.preferences.pathToPythonInterpreter

@@ -58,8 +58,41 @@ const formatConsoleLine = (line: string): JSX.Element => {
 
 export const Play: React.FC = () => {
     const webvizBuilder = useWebvizBuildService();
+    const [pageAccessible, setPageAccessible] = React.useState<boolean>(false);
+    const [noResponse, setNoResponse] = React.useState<boolean>(false);
 
     const theme = useTheme();
+
+    React.useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        let checks = 0;
+        const checkIfPageAccessible = () => {
+            fetch(
+                `http://localhost:${webvizBuilder.port}?ott=${webvizBuilder.token}`
+            )
+                .then(response => {
+                    setPageAccessible(response.ok);
+                    timeout = null;
+                    if (!response.ok) {
+                        checks++;
+                        if (checks > (10 * 60 * 1000) / 3000) {
+                            setNoResponse(true);
+                            return;
+                        }
+                        timeout = setTimeout(checkIfPageAccessible, 3000);
+                    }
+                })
+                .catch(() => {
+                    setPageAccessible(false);
+                });
+        };
+        timeout = setTimeout(checkIfPageAccessible, 3000);
+        return () => {
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+        };
+    }, [webvizBuilder.port, webvizBuilder.token]);
 
     return (
         <div className="Play">
@@ -108,37 +141,84 @@ export const Play: React.FC = () => {
                             </Grid>
                         </>
                     )}
-                    {webvizBuilder.builderState ===
-                        WebvizBuildState.Loading && (
-                        <>
-                            <Grid item>
-                                <CircularProgress />
-                            </Grid>
-                            <Grid item>
-                                <Typography
-                                    variant="body1"
-                                    color={theme.palette.text.primary}
-                                >
-                                    Building the Webviz dashboard...
-                                </Typography>
-                            </Grid>
-                        </>
-                    )}
-                    {webvizBuilder.builderState === WebvizBuildState.Loaded && (
-                        <div
-                            style={{
-                                backgroundColor: "#fff",
-                                height: "100%",
-                                width: "100%",
-                            }}
-                        >
-                            <Iframe
-                                url={`http://localhost:${webvizBuilder.port}?ott=${webvizBuilder.token}`}
-                                width="100%"
-                                height="100%"
-                            />
-                        </div>
-                    )}
+                    {webvizBuilder.builderState === WebvizBuildState.Loading &&
+                        noResponse && (
+                            <>
+                                <Grid item>
+                                    <Error fontSize="large" color="action" />
+                                </Grid>
+                                <Grid item>
+                                    <Typography
+                                        variant="body1"
+                                        color={theme.palette.text.primary}
+                                    >
+                                        Timeout for building your app exceeded.
+                                        Something has gone wrong.
+                                    </Typography>
+                                </Grid>
+                            </>
+                        )}
+                    {webvizBuilder.builderState === WebvizBuildState.Loading &&
+                        !noResponse && (
+                            <>
+                                <Grid item>
+                                    <CircularProgress />
+                                </Grid>
+                                <Grid item>
+                                    <Typography
+                                        variant="body1"
+                                        color={theme.palette.text.primary}
+                                    >
+                                        Building the Webviz dashboard...
+                                    </Typography>
+                                </Grid>
+                            </>
+                        )}
+                    {webvizBuilder.builderState === WebvizBuildState.Loaded &&
+                        !pageAccessible &&
+                        !noResponse && (
+                            <>
+                                <Grid item>
+                                    <CircularProgress />
+                                </Grid>
+                                <Grid item>
+                                    <Typography
+                                        variant="body1"
+                                        color={theme.palette.text.primary}
+                                        style={{textAlign: "center"}}
+                                    >
+                                        Starting the Webviz dashboard...
+                                    </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        color={theme.palette.text.secondary}
+                                        style={{textAlign: "center"}}
+                                    >
+                                        <i>
+                                            Depending on the size of your app
+                                            and the data that needs to be
+                                            loaded, this might take a while.
+                                        </i>
+                                    </Typography>
+                                </Grid>
+                            </>
+                        )}
+                    {webvizBuilder.builderState === WebvizBuildState.Loaded &&
+                        pageAccessible && (
+                            <div
+                                style={{
+                                    backgroundColor: "#fff",
+                                    height: "100%",
+                                    width: "100%",
+                                }}
+                            >
+                                <Iframe
+                                    url={`http://localhost:${webvizBuilder.port}?ott=${webvizBuilder.token}`}
+                                    width="100%"
+                                    height="100%"
+                                />
+                            </div>
+                        )}
                 </Grid>
                 <div
                     className="Console"

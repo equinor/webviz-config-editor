@@ -1,4 +1,5 @@
-import {List, Paper} from "@mui/material";
+import {Warning} from "@mui/icons-material";
+import {Chip, Paper} from "@mui/material";
 import {usePluginParser} from "@services/plugin-parser";
 import {useYamlParser} from "@services/yaml-parser";
 
@@ -16,6 +17,7 @@ import {EventSource} from "@shared-types/files";
 
 import {ArrayPluginArgumentObject, ArrayView} from "./components/array-view";
 import {IntegerView} from "./components/integer-view";
+import {List} from "./components/list";
 import {ObjectPluginArgumentObject, ObjectView} from "./components/object-view";
 import {StringView} from "./components/string-view";
 import "./plugin-preview.css";
@@ -60,7 +62,7 @@ export const PluginPreview: React.FC<PluginPreviewProps> = props => {
         } else {
             setSelected(false);
         }
-    }, [file?.selectedYamlObject, setSelected, props]);
+    }, [file, setSelected, props]);
 
     let title = "Text";
     let description = "Plain text";
@@ -80,9 +82,17 @@ export const PluginPreview: React.FC<PluginPreviewProps> = props => {
         >
             <h3>{title}</h3>
             <span className="PluginDescription">
-                <ReadMore minHeight={100} initiallyOpen={false}>
-                    <ReactMarkdown>{description}</ReactMarkdown>
-                </ReadMore>
+                {content !== "" ? (
+                    <ReadMore minHeight={100} initiallyOpen={false}>
+                        <ReactMarkdown>{description}</ReactMarkdown>
+                    </ReadMore>
+                ) : (
+                    <Chip
+                        label="Could not find this plugin in your Webviz schema file."
+                        color="warning"
+                        icon={<Warning />}
+                    />
+                )}
             </span>
             <List>
                 {content && content.constructor === Object

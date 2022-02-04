@@ -251,7 +251,6 @@ export const Editor: React.FC<EditorProps> = () => {
                     },
                 },
             ]);
-            console.log(eventSource);
             if (eventSource !== EventSource.Editor) {
                 monacoEditorRef.current.revealLinesInCenterIfOutsideViewport(
                     selectedYamlObject.startLineNumber,
@@ -259,6 +258,7 @@ export const Editor: React.FC<EditorProps> = () => {
                 );
             }
         }
+        /* eslint-disable react-hooks/exhaustive-deps */
     }, [selectedYamlObject, eventSource]);
 
     const handleFileChange = (filePath: string) => {
@@ -392,6 +392,14 @@ export const Editor: React.FC<EditorProps> = () => {
             */
         }
     };
+
+    React.useEffect(() => {
+        if (noModels) {
+            ipcRenderer.send("disable-save-actions");
+        } else {
+            ipcRenderer.send("enable-save-actions");
+        }
+    });
 
     React.useEffect(() => {
         return () => {

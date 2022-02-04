@@ -57,24 +57,26 @@ function App(): JSX.Element {
     );
 
     return (
-        <MainProcessDataProvider>
-            <ColorModeContext.Provider value={colorMode}>
-                <ThemeProvider theme={theme}>
-                    <NotificationsProvider>
-                        <YamlParserService>
-                            <PluginParserService>
-                                <IpcService>
-                                    <WebvizBuildService>
-                                        <GetStartedDialog />
-                                        <MainWindow />
-                                    </WebvizBuildService>
-                                </IpcService>
-                            </PluginParserService>
-                        </YamlParserService>
-                    </NotificationsProvider>
-                </ThemeProvider>
-            </ColorModeContext.Provider>
-        </MainProcessDataProvider>
+        <div className={mode === "light" ? "LightMode" : "DarkMode"}>
+            <MainProcessDataProvider>
+                <ColorModeContext.Provider value={colorMode}>
+                    <ThemeProvider theme={theme}>
+                        <NotificationsProvider>
+                            <YamlParserService>
+                                <PluginParserService>
+                                    <IpcService>
+                                        <WebvizBuildService>
+                                            <GetStartedDialog />
+                                            <MainWindow />
+                                        </WebvizBuildService>
+                                    </IpcService>
+                                </PluginParserService>
+                            </YamlParserService>
+                        </NotificationsProvider>
+                    </ThemeProvider>
+                </ColorModeContext.Provider>
+            </MainProcessDataProvider>
+        </div>
     );
 }
 

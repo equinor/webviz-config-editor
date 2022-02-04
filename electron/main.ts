@@ -66,6 +66,14 @@ ipcMain.on("get-app-data", event => {
     };
 });
 
+ipcMain.on("disable-save-actions", event => {
+    createMenu(true);
+});
+
+ipcMain.on("enable-save-actions", event => {
+    createMenu();
+});
+
 ipcMain.handle("select-file", async (event, options: FileExplorerOptions) => {
     return selectFileDialog(event, options);
 });

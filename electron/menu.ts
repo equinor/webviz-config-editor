@@ -1,10 +1,4 @@
-import {
-    BrowserWindow,
-    Menu,
-    MenuItemConstructorOptions,
-    app,
-    dialog,
-} from "electron";
+import {BrowserWindow, Menu, MenuItemConstructorOptions, app} from "electron";
 
 import * as path from "path";
 
@@ -14,7 +8,7 @@ import {RecentFiles, RecentFilesManager} from "./recent-files";
 
 const isDev = PROCESS_ENV.NODE_ENV === "development";
 
-export const createMenu = () => {
+export const createMenu = (disabledSaveActions = false) => {
     const isMac = process.platform === "darwin";
 
     const listOfRecentDocuments = RecentFiles.getRecentFiles();
@@ -82,6 +76,7 @@ export const createMenu = () => {
                 {
                     label: "Save",
                     accelerator: "CmdOrCtrl+S",
+                    enabled: !disabledSaveActions,
                     click() {
                         const window = BrowserWindow.getFocusedWindow();
                         if (window) {
@@ -92,76 +87,21 @@ export const createMenu = () => {
                 {
                     label: "Save as...",
                     accelerator: "CmdOrCtrl+Shift+S",
+                    enabled: !disabledSaveActions,
                     click() {
-                        dialog
-                            .showSaveDialog({
-                                title: "Save file as...",
-                                properties: [
-                                    "createDirectory",
-                                    "showOverwriteConfirmation",
-                                ],
-                                filters: [
-                                    {
-                                        name: "Webviz Config Files",
-                                        extensions: ["yml", "yaml"],
-                                    },
-                                ],
-                            })
-                            .then((fileObj: any) => {
-                                if (!fileObj.canceled && fileObj.filePath) {
-                                    const window =
-                                        BrowserWindow.getFocusedWindow();
-                                    if (window) {
-                                        window.webContents.send(
-                                            "save-file-as",
-                                            fileObj.filePath
-                                        );
-                                    }
-                                }
-                            })
-                            .catch(err => {
-                                console.error(err);
-                            });
+                        const window = BrowserWindow.getFocusedWindow();
+                        if (window) {
+                            window.webContents.send("save-file-as");
+                        }
                     },
                 },
                 isMac ? {role: "close"} : {role: "quit"},
-            ],
-        },
-        // { role: 'editMenu' }
-        {
-            label: "Edit",
-            submenu: [
-                {role: "cut"},
-                {role: "copy"},
-                {role: "paste"},
-                ...(isMac
-                    ? [
-                          {role: "pasteAndMatchStyle"},
-                          {role: "delete"},
-                          {role: "selectAll"},
-                          {type: "separator"},
-                          {
-                              label: "Speech",
-                              submenu: [
-                                  {role: "startSpeaking"},
-                                  {role: "stopSpeaking"},
-                              ],
-                          },
-                      ]
-                    : [
-                          {role: "delete"},
-                          {type: "separator"},
-                          {role: "selectAll"},
-                      ]),
             ],
         },
         // { role: 'viewMenu' }
         {
             label: "View",
             submenu: [
-                {role: "reload"},
-                {role: "forceReload"},
-                {type: "separator"},
                 {role: "resetZoom"},
                 {role: "zoomIn"},
                 {role: "zoomOut"},
@@ -174,7 +114,6 @@ export const createMenu = () => {
             label: "Window",
             submenu: [
                 {role: "minimize"},
-                {role: "zoom"},
                 ...(isMac
                     ? [
                           {type: "separator"},
@@ -215,6 +154,9 @@ export const createMenu = () => {
                   {
                       label: "Debug",
                       submenu: [
+                          {role: "reload"},
+                          {role: "forceReload"},
+                          {type: "separator"},
                           {role: "toggleDevTools"},
                           {
                               label: "Reset Initialization",

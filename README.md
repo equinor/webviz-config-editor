@@ -14,7 +14,7 @@
 
 <p align="center" style="margin-bottom: 64px;">
   <img alt="Webviz Logo" title="Webviz Logo" src="https://github.com/equinor/webviz-config/raw/master/webviz_config/_docs/static/webviz-logo.svg?sanitize=true" width="16">
-  <a href="https://github.com/equinor/webviz-config-editor/releases" style="margin-left: 4px;">
+  <a href="https://github.com/equinor/webviz-config" style="margin-left: 4px;">
     Checkout Main Project
   </a>
   <span style="margin: 8px;">&middot;</span>
@@ -28,6 +28,8 @@
 
 -   [Introduction](#introduction)
 -   [Features](#features)
+-   [Feedback](#feedback)
+-   [Build Process](#build-process)
 
 ## Introduction
 
@@ -64,7 +66,9 @@ You will also see any lint errors in the console.
 
 ### Feedback
 
-Feel free to send us feedback in the 💬 [discussions forum](https://github.com/equinor/webviz-config-editor/discussions) or ❗[file an issue](https://github.com/equinor/webviz-config-editor/issues). Feature requests are always welcome 😊👍. If you wish to contribute, please take a look at our 📜 [guidelines](https://github.com/equinor/webviz-config-editor/blob/master/CONTRIBUTING.md).
+Feel free to send us feedback in the 💬 [discussions forum](https://github.com/equinor/webviz-config-editor/discussions) or ❗[file an issue](https://github.com/equinor/webviz-config-editor/issues).
+
+Feature requests are always welcome 😊👍. If you wish to contribute, please take a look at our 📜 [guidelines](https://github.com/equinor/webviz-config-editor/blob/master/CONTRIBUTING.md).
 
 ### Build Process
 

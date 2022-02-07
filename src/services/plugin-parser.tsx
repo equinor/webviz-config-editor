@@ -3,7 +3,10 @@ import React from "react";
 import {createGenericContext} from "@utils/generic-context";
 import {PluginParser} from "@utils/plugin-parser";
 
-import {useAppSelector} from "@redux/hooks";
+import {useAppDispatch, useAppSelector} from "@redux/hooks";
+import {addNotification} from "@redux/reducers/notifications";
+
+import {NotificationType} from "@shared-types/notifications";
 
 import fs from "fs";
 
@@ -16,6 +19,7 @@ const [usePluginParserServiceContext, PluginParserServiceContextProvider] =
 
 export const PluginParserService: React.FC = props => {
     const pluginParser = React.useRef<PluginParser>(new PluginParser());
+    const dispatch = useAppDispatch();
 
     const jsonSchemaPath = useAppSelector(
         state => state.preferences.pathToYamlSchemaFile
@@ -26,8 +30,14 @@ export const PluginParserService: React.FC = props => {
             const fileContent = fs.readFileSync(jsonSchemaPath).toString();
             pluginParser.current.parse(JSON.parse(fileContent));
         } catch (e) {
-            console.log(e);
+            dispatch(
+                addNotification({
+                    type: NotificationType.ERROR,
+                    message: `Could not parse Webviz YAML schema. ${e}`,
+                })
+            );
         }
+        /* eslint-disable react-hooks/exhaustive-deps */
     }, [jsonSchemaPath]);
 
     return (

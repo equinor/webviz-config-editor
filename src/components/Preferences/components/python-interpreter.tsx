@@ -14,7 +14,6 @@ import {useAppDispatch, useAppSelector} from "@redux/hooks";
 import {setPathToPythonInterpreter} from "@redux/reducers/preferences";
 
 import {FileExplorerOptions} from "@shared-types/file-explorer-options";
-import {FileFilter} from "@shared-types/settings";
 
 import * as path from "path";
 
@@ -32,15 +31,13 @@ enum PreferenceItemLoadingState {
     ERROR,
 }
 
-export const PythonInterpreter: React.FC = props => {
+export const PythonInterpreter: React.FC = () => {
     const dispatch = useAppDispatch();
 
     const [localValue, setLocalValue] = React.useState<string>(
         useAppSelector(state => state.preferences.pathToPythonInterpreter)
     );
-    const [tempValue, setTempValue] = React.useState<string>("");
     const [options, setOptions] = React.useState<string[]>([]);
-    const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
     const [loadingState, setLoadingState] =
         React.useState<PreferenceItemLoadingState>(
             PreferenceItemLoadingState.LOADING
@@ -52,10 +49,6 @@ export const PythonInterpreter: React.FC = props => {
         state: PreferenceItemState.VALID,
         message: "",
     });
-
-    React.useEffect(() => {
-        setTempValue(localValue);
-    }, [localValue]);
 
     React.useEffect(() => {
         setLoadingState(PreferenceItemLoadingState.LOADING);
@@ -92,6 +85,7 @@ export const PythonInterpreter: React.FC = props => {
                 });
             }
         });
+        /* eslint-disable react-hooks/exhaustive-deps */
     }, [localValue]);
 
     const handleValueChanged = (value: string) => {
@@ -113,18 +107,6 @@ export const PythonInterpreter: React.FC = props => {
             return;
         }
         setLocalValue(value);
-    };
-
-    const openFileDialog = (filters: FileFilter[], defaultPath: string) => {
-        const opts: FileExplorerOptions = {
-            filters,
-            defaultPath,
-        };
-        ipcRenderer.invoke("select-file", opts).then(files => {
-            if (files) {
-                setTempValue(files[0]);
-            }
-        });
     };
 
     return (

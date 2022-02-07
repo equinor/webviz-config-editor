@@ -147,7 +147,7 @@ export const GetStartedDialog: React.FC = () => {
                             position: "absolute",
                             right: 8,
                             top: 8,
-                            color: el => theme.palette.grey[500],
+                            color: () => theme.palette.grey[500],
                         }}
                     >
                         <CloseIcon />

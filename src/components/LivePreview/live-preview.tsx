@@ -22,21 +22,15 @@ import {Menu} from "../Menu";
 
 import "./live-preview.css";
 
-type LivePreviewProps = {};
-
-type MenuReturnProps = {
-    url: string;
-};
-
 export enum PreviewMode {
     Edit = "EDIT",
     View = "VIEW",
 }
-export const LivePreview: React.FC<LivePreviewProps> = props => {
+export const LivePreview: React.FC = () => {
     const [navigationItems, setNavigationItems] =
         React.useState<NavigationType>([]);
     const [title, setTitle] = React.useState<string>("");
-    const [mode, setMode] = React.useState<PreviewMode>(PreviewMode.View);
+    const mode = PreviewMode.View;
     const [currentPageContent, setCurrentPageContent] = React.useState<
         LayoutObject[]
     >([]);

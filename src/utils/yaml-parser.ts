@@ -177,6 +177,7 @@ export class YamlParser {
 
     getEndLineNumber(item: yaml.CST.Token): number {
         let object: yaml.CST.Token = item;
+        /* eslint-disable no-constant-condition */
         while (true) {
             if (
                 object === undefined ||
@@ -383,20 +384,16 @@ export class YamlParser {
     private registerObject(object: any, item: any) {
         let startLineNumber = 0;
         let endLineNumber = 0;
-        let indent = 0;
 
         if (item.constructor === Array) {
             startLineNumber = this.getLineNumber(item[0].key.offset);
             endLineNumber = this.getEndLineNumber(item[item.length - 1].value);
-            indent = item[0].key.indent;
         } else if ("key" in item) {
             startLineNumber = this.getLineNumber(item.key.offset);
             endLineNumber = this.getEndLineNumber(item.value);
-            indent = item.key.indent;
         } else if ("offset" in item) {
             startLineNumber = this.getLineNumber(item.offset);
             endLineNumber = this.getEndLineNumber(item);
-            indent = item.indent;
         }
         const id = this.makeId(item.indent || 0);
         const newObject = {...object, id, startLineNumber, endLineNumber};
@@ -711,6 +708,7 @@ export class YamlParser {
         let objects: (YamlObject | LayoutObject)[] = this.getObjects();
         let lastMatchingObject: YamlObject | LayoutObject = objects[0];
         let breakLoop = false;
+        /* eslint-disable no-constant-condition */
         while (true) {
             let numMatches = 0;
             for (let i = 0; i < objects.length; i++) {
@@ -756,6 +754,7 @@ export class YamlParser {
         let objects: (YamlObject | LayoutObject)[] = this.getObjects();
         let lastMatchingObject: LayoutObject | YamlObject = objects[0];
         let breakLoop = false;
+        /* eslint-disable no-constant-condition */
         while (true) {
             let numMatches = 0;
             for (let i = 0; i < objects.length; i++) {

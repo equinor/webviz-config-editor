@@ -1,4 +1,4 @@
-import {Button, CircularProgress, TextField} from "@mui/material";
+import {Button, TextField} from "@mui/material";
 
 import {ipcRenderer} from "electron";
 
@@ -11,46 +11,17 @@ import {FileExplorerOptions} from "@shared-types/file-explorer-options";
 
 import "./preference-item.css";
 
-enum PreferenceItemState {
-    VALIDATING = 0,
-    VALID,
-    INVALID,
-}
-
-enum PreferenceItemLoadingState {
-    LOADING = 0,
-    LOADED,
-    ERROR,
-}
-
-export const WebvizSchema: React.FC = props => {
+export const WebvizSchema: React.FC = () => {
     const dispatch = useAppDispatch();
 
     const [localValue, setLocalValue] = React.useState<string>(
         useAppSelector(state => state.preferences.pathToYamlSchemaFile)
     );
-    const [options, setOptions] = React.useState<string[]>([]);
-    const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
-    const [loadingState, setLoadingState] =
-        React.useState<PreferenceItemLoadingState>(
-            PreferenceItemLoadingState.LOADED
-        );
-    const [state, setState] = React.useState<{
-        state: PreferenceItemState;
-        message: string;
-    }>({
-        state: PreferenceItemState.VALID,
-        message: "",
-    });
 
     React.useEffect(() => {
-        setState({state: PreferenceItemState.VALID, message: ""});
         dispatch(setPathToYamlSchemaFile(localValue));
+        /* eslint-disable react-hooks/exhaustive-deps */
     }, [localValue]);
-
-    const handleValueChanged = (value: string) => {
-        setLocalValue(value);
-    };
 
     const openFileDialog = () => {
         const opts: FileExplorerOptions = {
@@ -84,23 +55,14 @@ export const WebvizSchema: React.FC = props => {
             </span>
             <div className="PreferenceValue">
                 <>
-                    {loadingState === PreferenceItemLoadingState.LOADING && (
-                        <CircularProgress />
-                    )}
-                    {loadingState === PreferenceItemLoadingState.LOADED && (
-                        <>
-                            <TextField
-                                aria-readonly
-                                className="PreferenceInput"
-                                hiddenLabel
-                                value={localValue}
-                                size="small"
-                            />
-                            <Button onClick={() => openFileDialog()}>
-                                Select
-                            </Button>
-                        </>
-                    )}
+                    <TextField
+                        aria-readonly
+                        className="PreferenceInput"
+                        hiddenLabel
+                        value={localValue}
+                        size="small"
+                    />
+                    <Button onClick={() => openFileDialog()}>Select</Button>
                 </>
             </div>
         </div>

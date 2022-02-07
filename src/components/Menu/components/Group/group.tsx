@@ -2,7 +2,6 @@ import {Icon as EdsIcon} from "@equinor/eds-core-react";
 
 /* eslint-disable camelcase */
 import {arrow_drop_down, arrow_drop_right} from "@equinor/eds-icons";
-import {useTheme} from "@mui/material";
 
 import React from "react";
 import {Icon} from "../Icon";
@@ -35,9 +34,7 @@ export const Group: React.FC<GroupProps> = props => {
             `${props.id}-${props.title}`,
             collapsed ? "true" : "false"
         );
-    }, [collapsed]);
-
-    const theme = useTheme();
+    }, [collapsed, props.id, props.title]);
 
     return (
         <div className="Menu__Group">

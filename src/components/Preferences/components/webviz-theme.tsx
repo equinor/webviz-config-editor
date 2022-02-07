@@ -9,19 +9,13 @@ import {setWebvizTheme} from "@redux/reducers/preferences";
 
 import "./preference-item.css";
 
-enum PreferenceItemState {
-    VALIDATING = 0,
-    VALID,
-    INVALID,
-}
-
 enum PreferenceItemLoadingState {
     LOADING = 0,
     LOADED,
     ERROR,
 }
 
-export const WebvizTheme: React.FC = props => {
+export const WebvizTheme: React.FC = () => {
     const dispatch = useAppDispatch();
 
     const pythonInterpreter = useAppSelector(
@@ -36,13 +30,6 @@ export const WebvizTheme: React.FC = props => {
         React.useState<PreferenceItemLoadingState>(
             PreferenceItemLoadingState.LOADED
         );
-    const [state, setState] = React.useState<{
-        state: PreferenceItemState;
-        message: string;
-    }>({
-        state: PreferenceItemState.VALID,
-        message: "",
-    });
 
     React.useEffect(() => {
         setLoadingState(PreferenceItemLoadingState.LOADING);
@@ -58,7 +45,6 @@ export const WebvizTheme: React.FC = props => {
     }, [setOptions, setLoadingState, pythonInterpreter]);
 
     React.useEffect(() => {
-        setState({state: PreferenceItemState.VALID, message: ""});
         dispatch(setWebvizTheme(localValue));
     }, [localValue, dispatch]);
 

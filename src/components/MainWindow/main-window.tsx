@@ -3,8 +3,6 @@ import {Paper, Tab, Tabs, Tooltip, useTheme} from "@mui/material";
 
 import React from "react";
 
-import {ColorModeContext} from "@src/App";
-
 import {Editor} from "@components/Editor";
 import {LivePreview} from "@components/LivePreview/live-preview";
 import {Play} from "@components/Play";
@@ -21,11 +19,10 @@ import path from "path";
 
 import "./main-window.css";
 
-export const MainWindow: React.FC = props => {
+export const MainWindow: React.FC = () => {
     const currentPage = useAppSelector(state => state.ui.currentPage);
     const dispatch = useAppDispatch();
     const theme = useTheme();
-    const colorMode = React.useContext(ColorModeContext);
 
     const mainWindowRef = React.useRef<HTMLDivElement | null>(null);
     const files = useAppSelector(state => state.files);

@@ -150,7 +150,6 @@ export const filesSlice = createSlice({
             const fileToClose = state.files.find(
                 file => file.filePath === action.payload
             );
-            let newEditorContent = "";
             if (fileToClose) {
                 let newActiveFile = state.activeFile;
                 if (action.payload === state.activeFile) {
@@ -172,6 +171,7 @@ export const filesSlice = createSlice({
                     } else {
                         newActiveFile = "";
                     }
+                    state.activeFile = newActiveFile;
                 }
                 state.files = state.files.filter(
                     file => file.filePath !== action.payload

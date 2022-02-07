@@ -45,6 +45,7 @@ const isDev = PROCESS_ENV.NODE_ENV === "development";
 
 const userDataDir = app.getPath("userData");
 const userHomeDir = app.getPath("home");
+const appDir = app.getAppPath();
 
 const tempFiles: string[] = [];
 const tempFilesPath = path.resolve(userDataDir, ".tempfiles");
@@ -63,6 +64,7 @@ ipcMain.on("get-app-data", event => {
         version: app.getVersion(),
         userDataDir,
         userHomeDir,
+        appDir,
     };
 });
 

@@ -37,8 +37,8 @@
         "@types/shelljs": "0.8.9",
         "@types/styled-components": "5.1.12",
         "@types/which": "^2.0.1",
-        "@typescript-eslint/eslint-plugin": "^5.9.1",
-        "@typescript-eslint/parser": "^5.9.1",
+        "@typescript-eslint/eslint-plugin": "^4.14.2",
+        "@typescript-eslint/parser": "^4.0.0",
         "concurrently": "6.3.0",
         "craco-alias": "3.0.1",
         "craco-less": "1.20.0",
@@ -150,7 +150,7 @@
     },
     "build": {
         "appId": "io.equinor.configeditor",
-        "productName": "Webviz Config Editor",
+        "productName": "webviz config editor",
         "copyright": "Copyright © 2022 ${author}",
         "mac": {
             "category": "public.app-category.utilities",
@@ -213,7 +213,7 @@
             "category": "Development",
             "maintainer": "Webviz",
             "vendor": "Equinor",
-            "executableName": "Webviz Config Editor",
+            "executableName": "webviz config editor",
             "synopsis": "Efficiently create Webviz Dashboards",
             "description": "An open-source editor for creating Webviz dashboards."
         },
@@ -221,7 +221,7 @@
             "artifactName": "${productName}-${os}-${version}-${arch}.${ext}"
         },
         "deb": {
-            "packageCategory": "Kubeshop",
+            "packageCategory": "Webviz",
             "priority": "standard"
         },
         "asar": true,
@@ -262,16 +262,12 @@
                 "to": "resources"
             },
             {
-                "from": "resources/darwin",
-                "to": "app"
-            },
-            {
                 "from": "resources",
                 "to": "app"
             },
             {
                 "from": "python",
-                "to": "app/build"
+                "to": "python"
             }
         ],
         "directories": {

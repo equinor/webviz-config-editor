@@ -12,8 +12,8 @@ const middlewares: Middleware[] = [];
 
 if (process.env.NODE_ENV === `development`) {
     const reduxLoggerMiddleware = createLogger({
-        predicate: (getState, action) => true,
-        collapsed: (getState, action, logEntry) => !logEntry?.error,
+        predicate: () => true,
+        collapsed: (_, __, logEntry) => !logEntry?.error,
     });
 
     middlewares.push(reduxLoggerMiddleware);

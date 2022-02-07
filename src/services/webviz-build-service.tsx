@@ -102,12 +102,14 @@ export const WebvizBuildService: React.FC = props => {
                 fs.rmSync(tempPath);
             }
         };
-    }, [activeFilePath]);
+        /* eslint-disable react-hooks/exhaustive-deps */
+    }, [activeFilePath, currentFile]);
 
     React.useEffect(() => {
         const data = ipcRenderer.sendSync("get-app-data");
         setTokenPath(path.resolve(data.userDataDir, "token"));
         removeWebvizTokenFile(path.resolve(data.userDataDir, "token"));
+        /* eslint-disable react-hooks/exhaustive-deps */
     }, []);
 
     React.useEffect(() => {
@@ -132,6 +134,8 @@ export const WebvizBuildService: React.FC = props => {
 
         args.push(path.resolve(mainProcessData.userDataDir, "token"));
 
+        const data = ipcRenderer.sendSync("get-app-data");
+
         const options: Options = {
             mode: "text",
             pythonOptions: ["-u"],
@@ -139,7 +143,7 @@ export const WebvizBuildService: React.FC = props => {
             args,
         };
         const pythonShell = new PythonShell(
-            path.resolve("./", "python", "webviz_build.py"),
+            path.resolve(data.appDir, "..", "python", "webviz_build.py"),
             options
         );
 

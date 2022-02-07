@@ -64,13 +64,13 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
 
-### Feedback
+## Feedback
 
 Feel free to send us feedback in the 💬 [discussions forum](https://github.com/equinor/webviz-config-editor/discussions) or ❗[file an issue](https://github.com/equinor/webviz-config-editor/issues).
 
 Feature requests are always welcome 😊👍. If you wish to contribute, please take a look at our 📜 [guidelines](https://github.com/equinor/webviz-config-editor/blob/master/CONTRIBUTING.md).
 
-### Build Process
+## Build Process
 
 1. Install Node.js (https://nodejs.org/en/ or for Node Version Manager https://github.com/nvm-sh/nvm).
 2. Install dependencies:

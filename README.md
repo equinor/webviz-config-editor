@@ -13,7 +13,7 @@
 </p>
 
 <p align="center" style="margin-bottom: 64px;">
-  <img alt="Webviz Logo" title="Webviz Logo" src="https://github.com/equinor/webviz-config/raw/master/webviz_config/_docs/static/webviz-logo.svg?sanitize=true" width="12">
+  <img alt="Webviz Logo" title="Webviz Logo" src="https://github.com/equinor/webviz-config/raw/master/webviz_config/_docs/static/webviz-logo.svg?sanitize=true" width="16">
   <a href="https://github.com/equinor/webviz-config-editor/releases" style="margin-left: 4px;">
     Checkout Main Project
   </a>
@@ -24,19 +24,19 @@
   </a>
 </p>
 
-![GitHub](https://img.shields.io/github/license/equinor/webviz-config-editor)
-[![Build Status](https://github.com/equinor/webviz-config-editor/workflows/wce-publish/badge.svg)](https://github.com/equinor/webviz-config-editor/actions?query=branch%3Amaster)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/equinor/webviz-config-editor.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/equinor/webviz-config-editor/alerts/)
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/equinor/webviz-config-editor.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/equinor/webviz-config-editor/context:javascript)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier%20%28JavaScript%29-ff69b4.svg)](https://github.com/prettier/prettier)
-![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/equinor/webviz-config-editor)
-
 ## Table of Contents
 
 -   [Introduction](#introduction)
 -   [Features](#features)
 
 ## Introduction
+
+![GitHub](https://img.shields.io/github/license/equinor/webviz-config-editor)
+[![Build Status](https://github.com/equinor/webviz-config-editor/workflows/wce-publish/badge.svg)](https://github.com/equinor/webviz-config-editor/actions?query=branch%3Amain)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/equinor/webviz-config-editor.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/equinor/webviz-config-editor/alerts/)
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/equinor/webviz-config-editor.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/equinor/webviz-config-editor/context:javascript)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier%20%28JavaScript%29-ff69b4.svg)](https://github.com/prettier/prettier)
+![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/equinor/webviz-config-editor)
 
 Enhance your work with Webviz config files with file validation, autocompletion, live preview and an integrated build and play environment. All in one simple and lightweight app. Built with React, Electron, Monaco Editor and Redux.
 

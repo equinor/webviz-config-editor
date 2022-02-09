@@ -13,6 +13,8 @@ export const MainProcessDataProvider: React.FC = ({children}) => {
         version: "unknown",
         userDataDir: "",
         userHomeDir: "",
+        appDir: "",
+        isDev: false,
     });
 
     React.useEffect(() => {

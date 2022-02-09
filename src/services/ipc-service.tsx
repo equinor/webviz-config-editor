@@ -33,13 +33,21 @@ export const IpcService: React.FC = props => {
     const mainProcessData = useMainProcessDataProvider();
 
     React.useEffect(() => {
-        ipcRenderer.on("file-opened", (_, args) => {
+        const listeners: string[] = [];
+        const addListener = (
+            channelName: string,
+            func: (event?: Electron.IpcRendererEvent, args?: any) => void
+        ) => {
+            listeners.push(channelName);
+            ipcRenderer.on(channelName, func);
+        };
+        addListener("file-opened", (_, args) => {
             openFile(args[0], dispatch, yamlParser);
         });
-        ipcRenderer.on("new-file", () => {
+        addListener("new-file", () => {
             dispatch(addNewFile());
         });
-        ipcRenderer.on("save-file", () => {
+        addListener("save-file", () => {
             if (associatedWithFile) {
                 saveFile(activeFilePath, currentEditorValue, dispatch);
                 return;
@@ -68,7 +76,7 @@ export const IpcService: React.FC = props => {
                 }
             });
         });
-        ipcRenderer.on("save-file-as", () => {
+        addListener("save-file-as", () => {
             const options: FileExplorerOptions = {
                 filters: [
                     {
@@ -95,10 +103,10 @@ export const IpcService: React.FC = props => {
                 }
             });
         });
-        ipcRenderer.on("clear-recent-files", () => {
+        addListener("clear-recent-files", () => {
             dispatch(clearRecentFiles());
         });
-        ipcRenderer.on("recent-files-updated", () => {
+        addListener("recent-files-updated", () => {
             dispatch(
                 addNotification({
                     type: NotificationType.SUCCESS,
@@ -107,7 +115,7 @@ export const IpcService: React.FC = props => {
             );
         });
 
-        ipcRenderer.on("recent-files-cleared", () => {
+        addListener("recent-files-cleared", () => {
             dispatch(
                 addNotification({
                     type: NotificationType.SUCCESS,
@@ -116,7 +124,16 @@ export const IpcService: React.FC = props => {
             );
         });
 
-        ipcRenderer.on("debug:reset-init", () => {
+        addListener("error", (_, errorMessage) => {
+            dispatch(
+                addNotification({
+                    type: NotificationType.ERROR,
+                    message: errorMessage,
+                })
+            );
+        });
+
+        addListener("debug:reset-init", () => {
             dispatch(setInitialConfigurationDone(false));
             dispatch(
                 addNotification({
@@ -127,15 +144,9 @@ export const IpcService: React.FC = props => {
         });
 
         return () => {
-            ipcRenderer.removeAllListeners("file-opened");
-            ipcRenderer.removeAllListeners("new-file");
-            ipcRenderer.removeAllListeners("save-file");
-            ipcRenderer.removeAllListeners("save-file-as");
-            ipcRenderer.removeAllListeners("update-recent-documents");
-            ipcRenderer.removeAllListeners("clear-recent-files");
-            ipcRenderer.removeAllListeners("recent-files-updated");
-            ipcRenderer.removeAllListeners("recent-files-cleared");
-            ipcRenderer.removeAllListeners("debug:reset-init");
+            listeners.forEach(channelName => {
+                ipcRenderer.removeAllListeners(channelName);
+            });
         };
     }, [
         activeFilePath,

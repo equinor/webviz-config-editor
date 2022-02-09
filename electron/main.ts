@@ -55,7 +55,7 @@ ipcMain.on("add-temp-file", (event, file: string) => {
     try {
         fs.writeFileSync(tempFilesPath, tempFiles.join("\n"));
     } catch (e) {
-        console.log(e);
+        event.reply("error", `Could not create temporary file. ${e}`);
     }
 });
 

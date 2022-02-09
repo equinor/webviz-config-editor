@@ -4,8 +4,8 @@ const fs = require('fs');
 const getResourcesPath = () => (<any>process).resourcesPath;
 
 export default (): Promise<void> => {
-  const commandPath = path.resolve(getResourcesPath(), `app/darwin/bin/monokle.sh`);
-  const commandName = 'monokle';
+  const commandPath = path.resolve(getResourcesPath(), `app/darwin/bin/webviz-config-editor.sh`);
+  const commandName = 'webviz-config-editor';
 
   return new Promise((resolve, reject) => {
     if (typeof commandPath !== 'string' || typeof commandName !== 'string') {
@@ -18,7 +18,7 @@ export default (): Promise<void> => {
 
     const destinationPath = path.join('/usr/local/bin', commandName);
 
-    // not catch Error
+    // Do not catch Error
     fs.readlink(destinationPath, (_: any, realPath: string) => {
       if (realPath === commandPath) {
         resolve();

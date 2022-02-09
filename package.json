@@ -209,7 +209,7 @@
                     ]
                 }
             ],
-            "icon": "build/icon.png",
+            "icon": "../assets/icons/png/",
             "category": "Development",
             "maintainer": "Webviz",
             "vendor": "Equinor",
@@ -256,7 +256,10 @@
             "!notarization/**/*"
         ],
         "extraResources": [
-            "./assets/**",
+            {
+                "from": "assets",
+                "to": "assets"
+            },
             {
                 "from": "resources",
                 "to": "resources"

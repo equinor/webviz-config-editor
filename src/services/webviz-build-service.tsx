@@ -103,7 +103,7 @@ export const WebvizBuildService: React.FC = props => {
             }
         };
         /* eslint-disable react-hooks/exhaustive-deps */
-    }, [activeFilePath, currentFile]);
+    }, [activeFilePath]);
 
     React.useEffect(() => {
         const data = ipcRenderer.sendSync("get-app-data");
@@ -143,7 +143,12 @@ export const WebvizBuildService: React.FC = props => {
             args,
         };
         const pythonShell = new PythonShell(
-            path.resolve(data.appDir, "..", "python", "webviz_build.py"),
+            path.resolve(
+                data.appDir,
+                data.isDev ? "" : "..",
+                "python",
+                "webviz_build.py"
+            ),
             options
         );
 
@@ -161,6 +166,7 @@ export const WebvizBuildService: React.FC = props => {
         });
 
         pythonShell.on("pythonError", (error: PythonShellError) => {
+            setBuilderState(WebvizBuildState.PythonError);
             setConsoleMessages([...consoleMessages, `\x1b[37;41m ${error}`]);
         });
 

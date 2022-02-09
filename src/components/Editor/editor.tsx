@@ -365,6 +365,7 @@ export const Editor: React.FC<EditorProps> = () => {
                     );
                 }
                 monacoEditorRef.current.focus();
+                yamlParser.parse(file.editorValue);
             }
         }
         setNoModels(false);

@@ -30,7 +30,7 @@ const formatConsoleLine = (line: string): JSX.Element => {
 
     const matches = line.matchAll(regexp);
     const output: JSX.Element[] = [];
-    Array.from(matches).forEach(match => {
+    Array.from(matches).forEach((match, index) => {
         if (match.length > 1) {
             const colorCode = match[1].replace("\x1b[", "");
             const colorExists = Object.keys(colorTable).find(
@@ -45,6 +45,8 @@ const formatConsoleLine = (line: string): JSX.Element => {
                         color: color.color,
                         backgroundColor: color.backgroundColor,
                     }}
+                    /* eslint-disable react/no-array-index-key */
+                    key={`line-element-${index}`}
                 >
                     {match[2]}
                 </span>
@@ -60,6 +62,7 @@ export const Play: React.FC = () => {
     const webvizBuilder = useWebvizBuildService();
     const [pageAccessible, setPageAccessible] = React.useState<boolean>(false);
     const [noResponse, setNoResponse] = React.useState<boolean>(false);
+    const [noPermission, setNoPermission] = React.useState<boolean>(false);
 
     const theme = useTheme();
 
@@ -75,11 +78,15 @@ export const Play: React.FC = () => {
                     timeout = null;
                     if (!response.ok) {
                         checks++;
-                        if (checks > (10 * 60 * 1000) / 3000) {
-                            setNoResponse(true);
-                            return;
+                        if (response.status === 404) {
+                            if (checks > (3 * 60 * 1000) / 3000) {
+                                setNoResponse(true);
+                                return;
+                            }
+                            timeout = setTimeout(checkIfPageAccessible, 3000);
+                        } else {
+                            setNoPermission(true);
                         }
-                        timeout = setTimeout(checkIfPageAccessible, 3000);
                     }
                 })
                 .catch(() => {
@@ -97,52 +104,55 @@ export const Play: React.FC = () => {
     return (
         <div className="Play">
             <ResizablePanels id="Play-Console" direction="vertical">
-                <Grid
-                    container
-                    direction="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    spacing={2}
-                    className="Playground"
-                    style={{height: "100%"}}
-                >
-                    {(webvizBuilder.builderState ===
-                        WebvizBuildState.FileError ||
-                        webvizBuilder.builderState ===
-                            WebvizBuildState.PythonError) && (
-                        <>
-                            <Grid item>
-                                <Error fontSize="large" color="action" />
-                            </Grid>
-                            <Grid item>
-                                <Typography
-                                    variant="body1"
-                                    color={theme.palette.text.primary}
-                                >
-                                    An error occurred.
-                                </Typography>
-                            </Grid>
-                        </>
-                    )}
-                    {webvizBuilder.builderState ===
-                        WebvizBuildState.UnsavedFile && (
-                        <>
-                            <Grid item>
-                                <Error fontSize="large" color="action" />
-                            </Grid>
-                            <Grid item>
-                                <Typography
-                                    variant="body1"
-                                    color={theme.palette.text.primary}
-                                >
-                                    Your file has to be saved before it can be
-                                    displayed.
-                                </Typography>
-                            </Grid>
-                        </>
-                    )}
-                    {webvizBuilder.builderState === WebvizBuildState.Loading &&
-                        noResponse && (
+                {webvizBuilder.builderState !== WebvizBuildState.Loaded ||
+                !pageAccessible ||
+                noResponse ||
+                noPermission ? (
+                    <Grid
+                        container
+                        direction="column"
+                        justifyContent="center"
+                        alignItems="center"
+                        spacing={2}
+                        className="Playground"
+                        style={{height: "100%"}}
+                    >
+                        {(webvizBuilder.builderState ===
+                            WebvizBuildState.FileError ||
+                            webvizBuilder.builderState ===
+                                WebvizBuildState.PythonError) && (
+                            <>
+                                <Grid item>
+                                    <Error fontSize="large" color="action" />
+                                </Grid>
+                                <Grid item>
+                                    <Typography
+                                        variant="body1"
+                                        color={theme.palette.text.primary}
+                                    >
+                                        An error occurred.
+                                    </Typography>
+                                </Grid>
+                            </>
+                        )}
+                        {webvizBuilder.builderState ===
+                            WebvizBuildState.UnsavedFile && (
+                            <>
+                                <Grid item>
+                                    <Error fontSize="large" color="action" />
+                                </Grid>
+                                <Grid item>
+                                    <Typography
+                                        variant="body1"
+                                        color={theme.palette.text.primary}
+                                    >
+                                        Your file has to be saved before it can
+                                        be displayed.
+                                    </Typography>
+                                </Grid>
+                            </>
+                        )}
+                        {noResponse && (
                             <>
                                 <Grid item>
                                     <Error fontSize="large" color="action" />
@@ -158,68 +168,87 @@ export const Play: React.FC = () => {
                                 </Grid>
                             </>
                         )}
-                    {webvizBuilder.builderState === WebvizBuildState.Loading &&
-                        !noResponse && (
+                        {noPermission && (
                             <>
                                 <Grid item>
-                                    <CircularProgress />
+                                    <Error fontSize="large" color="action" />
                                 </Grid>
                                 <Grid item>
                                     <Typography
                                         variant="body1"
                                         color={theme.palette.text.primary}
                                     >
-                                        Building the Webviz dashboard...
+                                        Permission to access your dashboard
+                                        denied. Something has gone wrong.
                                     </Typography>
                                 </Grid>
                             </>
                         )}
-                    {webvizBuilder.builderState === WebvizBuildState.Loaded &&
-                        !pageAccessible &&
-                        !noResponse && (
-                            <>
-                                <Grid item>
-                                    <CircularProgress />
-                                </Grid>
-                                <Grid item>
-                                    <Typography
-                                        variant="body1"
-                                        color={theme.palette.text.primary}
-                                        style={{textAlign: "center"}}
-                                    >
-                                        Starting the Webviz dashboard...
-                                    </Typography>
-                                    <Typography
-                                        variant="body2"
-                                        color={theme.palette.text.secondary}
-                                        style={{textAlign: "center"}}
-                                    >
-                                        <i>
-                                            Depending on the size of your app
-                                            and the data that needs to be
-                                            loaded, this might take a while.
-                                        </i>
-                                    </Typography>
-                                </Grid>
-                            </>
-                        )}
-                    {webvizBuilder.builderState === WebvizBuildState.Loaded &&
-                        pageAccessible && (
-                            <div
-                                style={{
-                                    backgroundColor: "#fff",
-                                    height: "100%",
-                                    width: "100%",
-                                }}
-                            >
-                                <Iframe
-                                    url={`http://localhost:${webvizBuilder.port}?ott=${webvizBuilder.token}`}
-                                    width="100%"
-                                    height="100%"
-                                />
-                            </div>
-                        )}
-                </Grid>
+                        {webvizBuilder.builderState ===
+                            WebvizBuildState.Loading &&
+                            !noResponse && (
+                                <>
+                                    <Grid item>
+                                        <CircularProgress />
+                                    </Grid>
+                                    <Grid item>
+                                        <Typography
+                                            variant="body1"
+                                            color={theme.palette.text.primary}
+                                        >
+                                            Building the Webviz dashboard...
+                                        </Typography>
+                                    </Grid>
+                                </>
+                            )}
+                        {webvizBuilder.builderState ===
+                            WebvizBuildState.Loaded &&
+                            !pageAccessible &&
+                            !noResponse &&
+                            !noPermission && (
+                                <>
+                                    <Grid item>
+                                        <CircularProgress />
+                                    </Grid>
+                                    <Grid item>
+                                        <Typography
+                                            variant="body1"
+                                            color={theme.palette.text.primary}
+                                            style={{textAlign: "center"}}
+                                        >
+                                            Starting the Webviz dashboard...
+                                        </Typography>
+                                        <Typography
+                                            variant="body2"
+                                            color={theme.palette.text.secondary}
+                                            style={{textAlign: "center"}}
+                                        >
+                                            <i>
+                                                Depending on the size of your
+                                                app and the data that needs to
+                                                be loaded, this might take a
+                                                while.
+                                            </i>
+                                        </Typography>
+                                    </Grid>
+                                </>
+                            )}
+                    </Grid>
+                ) : (
+                    <div
+                        style={{
+                            backgroundColor: "#fff",
+                            height: "100%",
+                            width: "100%",
+                        }}
+                    >
+                        <Iframe
+                            url={`http://localhost:${webvizBuilder.port}?ott=${webvizBuilder.token}`}
+                            width="100%"
+                            height="100%"
+                        />
+                    </div>
+                )}
                 <div
                     className="Console"
                     style={{color: theme.palette.text.primary}}
@@ -242,11 +271,13 @@ export const Play: React.FC = () => {
                             <Grid item>Terminal</Grid>
                         </Grid>
                     </Paper>
-                    {webvizBuilder.consoleMessages.map(msg => (
-                        <div className="ConsoleLine" key={msg}>
-                            {formatConsoleLine(msg)}
-                        </div>
-                    ))}
+                    <div className="ConsoleContent">
+                        {webvizBuilder.consoleMessages.map(msg => (
+                            <div className="ConsoleLine" key={msg}>
+                                {formatConsoleLine(msg)}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </ResizablePanels>
         </div>

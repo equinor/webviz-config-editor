@@ -65,14 +65,15 @@ ipcMain.on("get-app-data", event => {
         userDataDir,
         userHomeDir,
         appDir,
+        isDev,
     };
 });
 
-ipcMain.on("disable-save-actions", event => {
+ipcMain.on("disable-save-actions", () => {
     createMenu(true);
 });
 
-ipcMain.on("enable-save-actions", event => {
+ipcMain.on("enable-save-actions", () => {
     createMenu();
 });
 
@@ -116,8 +117,6 @@ ipcMain.on("clear-recent-files", event => {
 const appTitle = "Webviz Config Editor";
 
 function createWindow() {
-    console.log(getAppIcon());
-
     const win = new BrowserWindow({
         title: appTitle,
         icon: getAppIcon(),

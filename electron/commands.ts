@@ -11,6 +11,10 @@ import * as path from "path";
 import {Options, PythonShell, PythonShellError} from "python-shell";
 import * as which from "which";
 
+import {PROCESS_ENV} from "./env";
+
+const isDev = PROCESS_ENV.NODE_ENV === "development";
+
 export const openFile = () => {
     dialog
         .showOpenDialog({
@@ -187,7 +191,12 @@ export const findWebvizThemes = (
         pythonPath,
     };
     PythonShell.run(
-        path.resolve(app.getAppPath(), "python", "webviz_themes.py"),
+        path.resolve(
+            app.getAppPath(),
+            isDev ? "" : "..",
+            "python",
+            "webviz_themes.py"
+        ),
         opts,
         (err?: PythonShellError, output?: any[]) => {
             if (output && output.length > 0 && "themes" in output[0]) {

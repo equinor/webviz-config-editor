@@ -1,0 +1,7 @@
+{
+  "eslint.validate": ["javascript"],
+  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  "prettier.configPath": ".eslintrc.json",
+  "prettier.ignorePath": ".prettierignorelint",
+  "prettier.tabWidth": 4
+}

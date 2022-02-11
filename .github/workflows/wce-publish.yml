@@ -1,17 +1,14 @@
 name: wce-sign-notarize-publish
 
 on:
-    push:
-        branches:
-            - main
     release:
         types:
-            - prereleased
+            - published
 
     workflow_dispatch:
 
 jobs:
-    build-and-publish-on-linux:
+    build-and-upload-assets-on-linux:
         runs-on: ubuntu-latest
 
         steps:
@@ -80,16 +77,12 @@ jobs:
                   ls -alh dist | grep webviz-config-editor && du -sh dist || true
               if: ${{ success() }}
 
-            - name: 📤 Create Release and Upload Artifacts
-              if: ${{ !contains(github.ref, 'main') }}
-              uses: ncipollo/release-action@v1
+            - name: 📤 Upload Release Assets
+              uses: shogo82148/actions-upload-release-asset@v1
               with:
-                  allowUpdates: true
-                  prerelease: true
-                  artifacts: "dist/latest-linux.yml,dist/latest-linux-arm64.yml,dist/*.deb,dist/*.AppImage"
-                  omitBody: true
-                  tag: ${{ steps.package.outputs.TAG }}
-                  token: ${{ secrets.github_token }}
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: dist/*.[deb|AppImage]
+                  github_token: ${{ secrets.github_token }}
 
             - name: 🗄️ Archive Binary
               uses: actions/upload-artifact@v2

@@ -150,7 +150,7 @@
     },
     "build": {
         "appId": "io.equinor.configeditor",
-        "productName": "webviz config editor",
+        "productName": "Webviz Config Editor",
         "copyright": "Copyright © 2022 ${author}",
         "mac": {
             "category": "public.app-category.utilities",

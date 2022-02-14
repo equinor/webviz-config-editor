@@ -77,12 +77,29 @@ jobs:
                   ls -alh dist | grep webviz-config-editor && du -sh dist || true
               if: ${{ success() }}
 
-            - name: 📤 Upload Release Assets
+            - name: 📤 Upload .deb Release Assets
               uses: shogo82148/actions-upload-release-asset@v1
               with:
                   upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: dist/*.[deb|AppImage]
+                  asset_path: dist/*.deb
                   github_token: ${{ secrets.github_token }}
+                  overwrite: true
+
+            - name: 📤 Upload .AppImage Release Assets
+              uses: shogo82148/actions-upload-release-asset@v1
+              with:
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: dist/*.AppImage
+                  github_token: ${{ secrets.github_token }}
+                  overwrite: true
+
+            - name: 📤 Upload .rpm Release Assets
+              uses: shogo82148/actions-upload-release-asset@v1
+              with:
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: dist/*.rpm
+                  github_token: ${{ secrets.github_token }}
+                  overwrite: true
 
             - name: 🗄️ Archive Binary
               uses: actions/upload-artifact@v2

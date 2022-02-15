@@ -150,7 +150,7 @@
     },
     "build": {
         "appId": "io.equinor.configeditor",
-        "productName": "webviz config editor",
+        "productName": "WebvizConfigEditor",
         "copyright": "Copyright © 2022 ${author}",
         "mac": {
             "category": "public.app-category.utilities",
@@ -196,6 +196,13 @@
             "target": [
                 {
                     "target": "deb",
+                    "arch": [
+                        "x64",
+                        "arm64"
+                    ]
+                },
+                {
+                    "target": "rpm",
                     "arch": [
                         "x64",
                         "arm64"

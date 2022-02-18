@@ -83,7 +83,11 @@ export const WebvizBuildService: React.FC = props => {
     };
 
     React.useEffect(() => {
-        if (!currentFile || !currentFile.associatedWithFile) {
+        if (
+            !currentFile ||
+            !currentFile.associatedWithFile ||
+            currentView !== Pages.Play
+        ) {
             return;
         }
         const tempPath = createTempFilePath(path.dirname(activeFilePath));
@@ -105,7 +109,7 @@ export const WebvizBuildService: React.FC = props => {
             }
         };
         /* eslint-disable react-hooks/exhaustive-deps */
-    }, [activeFilePath]);
+    }, [activeFilePath, currentView]);
 
     React.useEffect(() => {
         const data = ipcRenderer.sendSync("get-app-data");
@@ -115,10 +119,6 @@ export const WebvizBuildService: React.FC = props => {
     }, []);
 
     React.useEffect(() => {
-        if (currentView !== Pages.Play) {
-            return;
-        }
-
         if (!currentFile || !currentFile.associatedWithFile) {
             setBuilderState(WebvizBuildState.UnsavedFile);
             return;
@@ -208,7 +208,7 @@ export const WebvizBuildService: React.FC = props => {
             removeWebvizTokenFile(tokenPath);
         };
         /* eslint-disable react-hooks/exhaustive-deps */
-    }, [tempFilePath, currentView]);
+    }, [tempFilePath]);
 
     React.useEffect(() => {
         if (currentFile?.editorValue) {
@@ -216,7 +216,7 @@ export const WebvizBuildService: React.FC = props => {
                 fs.writeFileSync(tempFilePath, currentFile.editorValue);
             }
         }
-    }, [currentFile?.editorValue, tempFilePath]);
+    }, [currentFile?.editorValue, tempFilePath, currentView]);
 
     return (
         <WebvizBuildServiceContextProvider

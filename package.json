@@ -151,7 +151,7 @@
     },
     "build": {
         "appId": "io.equinor.configeditor",
-        "productName": "WebvizConfigEditor",
+        "productName": "webviz-config-editor",
         "copyright": "Copyright © 2022 ${author}",
         "mac": {
             "category": "public.app-category.utilities",
@@ -221,7 +221,7 @@
             "category": "Development",
             "maintainer": "Webviz",
             "vendor": "Equinor",
-            "executableName": "Webviz Config Editor",
+            "executableName": "webviz-config-editor",
             "synopsis": "Efficiently create Webviz Dashboards",
             "description": "An open-source editor for creating Webviz dashboards."
         },

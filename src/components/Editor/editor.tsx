@@ -45,7 +45,7 @@ import {Environment, Uri, languages} from "monaco-editor";
 import "monaco-yaml/lib/esm/monaco.contribution";
 // @ts-ignore
 import * as path from "path";
-import {uuid} from "uuidv4";
+import {v4} from "uuid";
 // @ts-ignore
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import EditorWorker from "worker-loader!monaco-editor/esm/vs/editor/editor.worker";
@@ -532,7 +532,7 @@ export const Editor: React.FC<EditorProps> = () => {
                             <div
                                 className="Issue"
                                 onClick={() => selectMarker(marker)}
-                                key={uuid()}
+                                key={v4()}
                             >
                                 {marker.severity ===
                                 monaco.MarkerSeverity.Error ? (

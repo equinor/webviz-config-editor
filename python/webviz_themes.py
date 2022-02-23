@@ -1,3 +1,6 @@
+# Workaround while waiting for necessary feature in webviz-config.
+# To be removed/simplified when feature is available upstream
+
 import sys
 try:
     # Python 3.8+

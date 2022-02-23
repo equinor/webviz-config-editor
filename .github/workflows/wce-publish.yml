@@ -77,6 +77,22 @@ jobs:
                   ls -alh dist | grep webviz-config-editor && du -sh dist || true
               if: ${{ success() }}
 
+            - name: 🐍 Set up Python
+              uses: actions/setup-python@v2
+              with:
+                python-version: 3.6
+
+            - name: 🚢 Build and deploy Python package
+              working-directory: ./python
+              env:
+                TWINE_USERNAME: __token__
+                TWINE_PASSWORD: ${{ secrets.pypi_webviz_token }}
+              run: |
+                cp ../dist/WebvizConfigEditor-linux-*-x86_64.rpm ./webviz_config_editor/webviz-config-editor-binary
+                python -m pip install --upgrade setuptools wheel twine
+                python setup.py sdist bdist_wheel
+                twine upload dist/*
+                
             - name: 📤 Upload .deb Release Assets
               uses: shogo82148/actions-upload-release-asset@v1
               with:

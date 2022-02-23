@@ -1,3 +1,6 @@
+# Workaround while waiting for necessary feature in webviz-config.
+# To be removed/simplified when feature is available upstream
+
 from argparse import Namespace
 import sys
 from pathlib import Path

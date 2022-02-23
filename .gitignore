@@ -27,3 +27,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# python
+.eggs
+python/build
+*.egg-info
+python/webviz_config_editor/*-binary
+__pycache__

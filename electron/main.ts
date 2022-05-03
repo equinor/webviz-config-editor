@@ -215,6 +215,8 @@ const openApplication = async () => {
 
 openApplication();
 
-terminal()
-    // eslint-disable-next-line no-console
-    .catch(e => console.log(e));
+if (process.platform === 'darwin') {
+    terminal()
+        // eslint-disable-next-line no-console
+        .catch(e => console.log(e));
+}

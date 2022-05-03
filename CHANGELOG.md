@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED] - YYYY-MM-DD
 
+## Changed
+
+- [#12](https://github.com/equinor/webviz-config-editor/pull/12) - Added a check if on Mac before running terminal command in order to prevent misleading error message on other OSes. Also switched from deprecated `uuidv4` to `uuid.v4`.
+
 ### Fixed
 
--   [#10](https://github.com/equinor/webviz-config-editor/pull/10) - Fixed: Build was automatically triggered when opening/editing an existing config file. Now it is only triggered when opening the `Play` view.
+- [#10](https://github.com/equinor/webviz-config-editor/pull/10) - Fixed: Build was automatically triggered when opening/editing an existing config file. Now it is only triggered when opening the `Play` view.

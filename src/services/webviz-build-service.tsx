@@ -15,7 +15,7 @@ import {Pages} from "@shared-types/ui";
 import fs from "fs";
 import path from "path";
 import {Options, PythonShell, PythonShellError} from "python-shell";
-import {uuid} from "uuidv4";
+import {v4} from "uuid";
 
 export enum WebvizBuildState {
     Loading = "loading",
@@ -35,7 +35,7 @@ type Context = {
 const createTempFilePath = (dir: string): string => {
     let tempPath = "";
     while (tempPath === "" || fs.existsSync(tempPath)) {
-        tempPath = path.resolve(dir, `.~${uuid()}.yaml`);
+        tempPath = path.resolve(dir, `.~${v4()}.yaml`);
     }
     ipcRenderer.send("add-temp-file", tempPath);
     return tempPath;

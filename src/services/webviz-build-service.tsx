@@ -10,6 +10,7 @@ import {useAppDispatch, useAppSelector} from "@redux/hooks";
 import {addNotification} from "@redux/reducers/notifications";
 
 import {NotificationType} from "@shared-types/notifications";
+import {Pages} from "@shared-types/ui";
 
 import fs from "fs";
 import path from "path";
@@ -52,6 +53,7 @@ export const WebvizBuildService: React.FC = props => {
     const currentFile = useAppSelector(state =>
         state.files.files.find(file => file.filePath === state.files.activeFile)
     );
+    const currentView = useAppSelector(state => state.ui.currentPage);
     const webvizTheme = useAppSelector(state => state.preferences.webvizTheme);
     const pythonInterpreterPath = useAppSelector(
         state => state.preferences.pathToPythonInterpreter
@@ -81,7 +83,11 @@ export const WebvizBuildService: React.FC = props => {
     };
 
     React.useEffect(() => {
-        if (!currentFile || !currentFile.associatedWithFile) {
+        if (
+            !currentFile ||
+            !currentFile.associatedWithFile ||
+            currentView !== Pages.Play
+        ) {
             return;
         }
         const tempPath = createTempFilePath(path.dirname(activeFilePath));
@@ -103,7 +109,7 @@ export const WebvizBuildService: React.FC = props => {
             }
         };
         /* eslint-disable react-hooks/exhaustive-deps */
-    }, [activeFilePath]);
+    }, [activeFilePath, currentView]);
 
     React.useEffect(() => {
         const data = ipcRenderer.sendSync("get-app-data");
@@ -210,7 +216,7 @@ export const WebvizBuildService: React.FC = props => {
                 fs.writeFileSync(tempFilePath, currentFile.editorValue);
             }
         }
-    }, [currentFile, tempFilePath]);
+    }, [currentFile?.editorValue, tempFilePath, currentView]);
 
     return (
         <WebvizBuildServiceContextProvider

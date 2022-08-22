@@ -60,12 +60,14 @@ ipcMain.on("add-temp-file", (event, file: string) => {
 });
 
 ipcMain.on("get-app-data", event => {
+    console.log(process.argv[1]);
     event.returnValue = {
         version: app.getVersion(),
         userDataDir,
         userHomeDir,
         appDir,
         isDev,
+        filePathArg: process.argv.length >= 2 ? process.argv[1] : null,
     };
 });
 
@@ -162,12 +164,12 @@ function createWindow() {
 
 const openApplication = async () => {
     await app.whenReady();
-    if (isDev) {
+    //if (isDev) {
         // DevTools
         installExtension(REACT_DEVELOPER_TOOLS)
             .then(name => console.log(`Added Extension:  ${name}`))
             .catch(err => console.log("An error occurred: ", err));
-    }
+    //}
 
     ElectronStore.initRenderer();
     createWindow();

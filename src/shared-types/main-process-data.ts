@@ -4,4 +4,5 @@ export type MainProcessData = {
     userHomeDir: string;
     appDir: string;
     isDev: boolean;
+    filePathArg: string | null;
 };

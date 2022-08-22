@@ -183,7 +183,7 @@ export const filesSlice = createSlice({
             action: PayloadAction<string>
         ) => {
             if (!state.recentFiles.includes(action.payload)) {
-                state.recentFiles.push(action.payload);
+                state.recentFiles = [...state.recentFiles, action.payload];
                 electronStore.set("files.recentFiles", state.recentFiles);
                 ipcRenderer.send("set-recent-files", state.recentFiles);
             }

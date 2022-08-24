@@ -54,6 +54,7 @@ import EditorWorker from "worker-loader!monaco-editor/esm/vs/editor/editor.worke
 import YamlWorker from "worker-loader!monaco-yaml/lib/esm/yaml.worker";
 
 import "./editor.css";
+import { useMainProcessDataProvider } from '../MainProcessDataProvider/main-process-data-provider';
 
 declare global {
     interface Window {
@@ -109,6 +110,7 @@ export const Editor: React.FC<EditorProps> = () => {
     );
 
     const yamlParser = useYamlParser();
+    const mainProcessData = useMainProcessDataProvider();
 
     const monacoEditorRef =
         React.useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -134,6 +136,12 @@ export const Editor: React.FC<EditorProps> = () => {
     const fontSize = useAppSelector(state => state.ui.settings.editorFontSize);
 
     useYamlSchema(yaml);
+
+    React.useEffect(() => {
+        if (mainProcessData.filePathArg) {
+            openFile(mainProcessData.filePathArg, dispatch, yamlParser);
+        }
+    }, [mainProcessData.filePathArg, yamlParser, dispatch]);
 
     React.useEffect(() => {
         const timeoutRef = timeout.current;

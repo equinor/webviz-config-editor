@@ -61,7 +61,6 @@ ipcMain.on("add-temp-file", (event, file: string) => {
 
 ipcMain.on("get-app-data", event => {
     const filePath = process.argv[process.argv.length - 1];
-    fs.writeFileSync("/home/ruben/test.log", process.argv.join(", "));
 
     event.returnValue = {
         version: app.getVersion(),
@@ -69,7 +68,7 @@ ipcMain.on("get-app-data", event => {
         userHomeDir,
         appDir,
         isDev,
-        filePathArg: fs.existsSync(filePath) && filePath !== "." ? filePath : null,
+        filePathArg: process.argv.length > 1 && fs.existsSync(filePath) && filePath !== "." ? filePath : null,
     };
 });
 

@@ -60,12 +60,16 @@ ipcMain.on("add-temp-file", (event, file: string) => {
 });
 
 ipcMain.on("get-app-data", event => {
+    let filePath: string | null = process.argv[process.argv.length - 1];
+    filePath = process.argv.length > 1 && fs.existsSync(filePath) && filePath !== "." ? filePath : null;
+
     event.returnValue = {
         version: app.getVersion(),
         userDataDir,
         userHomeDir,
         appDir,
         isDev,
+        filePathArg: filePath,
     };
 });
 

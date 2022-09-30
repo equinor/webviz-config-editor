@@ -15,10 +15,12 @@ export const MainProcessDataProvider: React.FC = ({children}) => {
         userHomeDir: "",
         appDir: "",
         isDev: false,
+        filePathArg: null,
     });
 
     React.useEffect(() => {
-        setData(ipcRenderer.sendSync("get-app-data"));
+        const mainProcessData = ipcRenderer.sendSync("get-app-data");
+        setData(mainProcessData);
     }, []);
 
     return <DataProvider value={data}>{children}</DataProvider>;

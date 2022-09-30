@@ -15,6 +15,10 @@ import {setCurrentPage} from "@redux/reducers/ui";
 
 import {Pages} from "@shared-types/ui";
 
+import { useMainProcessDataProvider } from "@components/MainProcessDataProvider/main-process-data-provider";
+import { useYamlParser } from "@services/yaml-parser";
+import { openFile } from "@redux/thunks";
+
 import path from "path";
 
 import "./main-window.css";
@@ -23,6 +27,8 @@ export const MainWindow: React.FC = () => {
     const currentPage = useAppSelector(state => state.ui.currentPage);
     const dispatch = useAppDispatch();
     const theme = useTheme();
+    const yamlParser = useYamlParser();
+    const mainProcessData = useMainProcessDataProvider();
 
     const mainWindowRef = React.useRef<HTMLDivElement | null>(null);
     const files = useAppSelector(state => state.files);
@@ -36,6 +42,12 @@ export const MainWindow: React.FC = () => {
             files.activeFile
         )} - Webviz Config Editor`;
     }, [files]);
+
+    React.useEffect(() => {
+        if (mainProcessData.filePathArg) {
+            openFile(mainProcessData.filePathArg, dispatch, yamlParser);
+        }
+    }, [mainProcessData.filePathArg, yamlParser, dispatch]);
 
     return (
         <div

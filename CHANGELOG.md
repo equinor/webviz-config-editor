@@ -15,3 +15,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - [#10](https://github.com/equinor/webviz-config-editor/pull/10) - Fixed: Build was automatically triggered when opening/editing an existing config file. Now it is only triggered when opening the `Play` view.
+
+- [#25](https://github.com/equinor/webviz-config-editor/pull/25) - Fixed: Cloning error when saving file that has already been saved before.
